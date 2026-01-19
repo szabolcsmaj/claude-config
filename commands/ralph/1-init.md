@@ -20,39 +20,39 @@ project_goal=$1
 
 <project_goal>
 
-## Problem statement
+# Problem statement
 
 <!-- Why does this exist? -->
 <!-- "Users can't track expenses across multiple accounts" -->
 
-## Goals / Success Criteria
+# Goals / Success Criteria
 <!-- What does "done" look like? -->
 <!-- "Users can link 3+ bank accounts and see unified dashboard" -->
 
-## User Personas
+# User Personas
 <!-- Who is this for? -->
 <!-- Brief description of target users -->
 
-## Functional Requirements
+# Functional Requirements
 <!-- What it does -->
 <!-- Features, user flows, capabilities -->
 <!-- Be concrete in functional requirements - "user can export data" is vague; "user can export transactions as CSV filtered by date range" is actionable -->
 
-## Non-Functional Requirements
+# Non-Functional Requirements
 <!-- How well it does it -->
 <!-- Performance, security, scalability, accessibility -->
 <!-- Non-functional requirements often get skipped but they drive architecture decisions (e.g., "must handle 10k concurrent users" changes everything) -->
 
-## Data Model / Entities
+# Data Model / Entities
 <!-- Core concepts -->
 <!-- User, Account, Transaction, etc. -->
 <!-- Data entities help AI understand the domain model, which influences database schema, API design, and UI specs -->
 
-## Integrations / Dependencies
+# Integrations / Dependencies
 <!-- External systems -->
 <!-- APIs, auth providers, databases -->
 
-## Technology
+# Technology
 <!-- The intended technology we want to use
 <!-- 
     Think about: 
@@ -77,6 +77,7 @@ project_goal=$1
 	    - linter + formatter (ruff check, ruff format, biome check), type checking (mypy, tsc), unit tests (
 	- task runners: celery (worker + beat) + redis
 	- caching: if needed
+	- file handling: S3, local
 	- i18n: if needed
 	- auth: 
 	    - OAuth 2.0 / OIDC:
@@ -109,13 +110,13 @@ project_goal=$1
 	    - python_dotenv: .env handling
 --> 
 
-## Assumptions
+# Assumptions
 
-## Constraints
+# Constraints
 <!-- Boundaries -->
 <!-- Tech stack, budget, timeline, team size, external systems and dependencies -->
 
-## Security concerns
+# Security concerns
 <!-- Security related things go here -->
 <!-- 
     SAST (Static Application Security Testing), DAST (Dynamic Application Security Testing), PBT (Property-Based Testing)
