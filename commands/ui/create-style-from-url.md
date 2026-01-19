@@ -1,10 +1,52 @@
 # UI Style Specification Generator
 
-You are helping the user create a comprehensive UI style specification by analyzing URLs.
+You are helping the user create a comprehensive UI style specification by analyzing URLs using **dual analysis**: text-based HTML extraction AND visual screenshot analysis.
 
 ## Input
 
 Reference URL: $ARGUMENTS
+
+---
+
+## Analysis Architecture
+
+This skill uses **parallel subagents** for comprehensive style extraction:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      MAIN ORCHESTRATOR                          │
+│  1. Discover URLs from main page                                │
+│  2. Launch parallel subagents for each URL                      │
+│  3. Merge findings from all sources                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+┌─────────────────────────┐     ┌─────────────────────────┐
+│   WebFetch Subagents    │     │ agent-browser Subagents │
+│   (Text/HTML Analysis)  │     │  (Visual Screenshots)   │
+│                         │     │                         │
+│ • CSS class extraction  │     │ • 1 full screenshot/page│
+│ • Framework detection   │     │ • Actual rendered colors│
+│ • Link/meta analysis    │     │ • Real typography       │
+│ • Structure parsing     │     │ • Visual hierarchy      │
+│                         │     │                         │
+│ Runs in PARALLEL        │     │ Runs in PARALLEL        │
+└─────────────────────────┘     └─────────────────────────┘
+              │                               │
+              └───────────────┬───────────────┘
+                              ▼
+                 ┌─────────────────────────┐
+                 │    MERGED FINDINGS      │
+                 │ • Cross-validate data   │
+                 │ • Resolve conflicts     │
+                 │ • Generate final spec   │
+                 └─────────────────────────┘
+```
+
+**Output directory:** `./style-analysis-{sanitized-domain}/` (created in current working directory)
+
+Example: For `https://www.example-site.com`, creates `./style-analysis-www-example-site-com/`
 
 ---
 
@@ -76,108 +118,301 @@ Use this reference to classify analyzed pages. Match against one or more styles,
 
 ## Your Task
 
-### Step 0: Classify the Initial URL
+### Step 0: Initialize Analysis Environment
 
-Before deep analysis, determine what type of page this is:
+Before starting, create the output directory for screenshots and analysis files:
 
-**Page Type Classification:**
-| Type | Characteristics | What It Reveals |
-|------|-----------------|-----------------|
-| **Marketing/Landing** | Hero sections, CTAs, feature showcases, testimonials | Brand colors, marketing typography, illustration style |
-| **Documentation** | Sidebar nav, code blocks, search, content-heavy | Reading typography, code styling, navigation patterns |
-| **Blog/Content** | Article layout, author info, related posts | Editorial style, image treatment, content typography |
-| **Product/App UI** | Dashboard, forms, tables, authenticated views | Actual component styles, data density, interaction patterns |
-| **Pricing/Comparison** | Tables, feature lists, plan cards | Card styles, table design, CTA treatment |
-| **Login/Auth** | Forms, social buttons, minimal layout | Form styling, button variants, error states |
-| **Changelog/Updates** | Timeline, version numbers, categorized entries | List styles, badge/tag design, date formatting |
+**Directory Naming Convention:**
+1. Extract the domain from the URL (e.g., `www.example-site.com` from `https://www.example-site.com/docs`)
+2. Convert ALL non-alphanumeric characters to `-` (dots, hyphens, underscores, etc.)
+3. Create directory: `style-analysis-{sanitized-domain}`
 
-**IMPORTANT:** Marketing pages and product UIs often have DIFFERENT design systems. Ask the user which they want to emulate.
+**Examples:**
+| URL | Output Directory |
+|-----|------------------|
+| `https://www.stripe.com` | `./style-analysis-www-stripe-com/` |
+| `https://linear.app/features` | `./style-analysis-linear-app/` |
+| `https://docs.github.com` | `./style-analysis-docs-github-com/` |
+| `https://my-site.example.co.uk` | `./style-analysis-my-site-example-co-uk/` |
 
-### Step 1: Smart Page Discovery
-
-After analyzing the initial URL:
-
-1. **Extract the base domain** from the provided URL
-2. **Probe for common subpages** (use WebFetch, handle 404s gracefully):
-   - `/docs` or `/documentation` - documentation style
-   - `/pricing` - pricing cards, comparison tables
-   - `/blog` - content/editorial style
-   - `/features` - feature presentation style
-   - `/about` - team/company page style
-   - `/login` or `/signin` - form styling
-   - `/changelog` or `/releases` - list/timeline style
-   - `/contact` - form styling
-
-3. **Report what you found:**
-```markdown
-## Discovered Pages
-
-| Page | URL | Status | Page Type |
-|------|-----|--------|-----------|
-| Main | [url] | ✓ Analyzed | Marketing |
-| Docs | [url]/docs | ✓ Found | Documentation |
-| Pricing | [url]/pricing | ✓ Found | Pricing |
-| Blog | [url]/blog | ✗ Not found | - |
-| Login | [url]/login | ✓ Found | Auth |
+**Create the directory structure:**
+```bash
+# Replace {sanitized-domain} with the actual sanitized domain name
+mkdir -p ./style-analysis-{sanitized-domain}/screenshots
+mkdir -p ./style-analysis-{sanitized-domain}/html
+mkdir -p ./style-analysis-{sanitized-domain}/reports
 ```
 
-4. **Ask the user:**
-   - "I found these accessible pages. Which should I analyze for style extraction? (I recommend analyzing 3-5 diverse page types for a complete picture)"
-   - "Is there a specific page type you care most about? (e.g., 'I want my app to look like their dashboard, not their marketing site')"
-   - "Do you have URLs to additional pages I should analyze? (e.g., a public demo, a specific feature page)"
+**Store the base path** for use throughout the analysis:
+```
+BASE_DIR="./style-analysis-{sanitized-domain}"
+```
 
-**Limit: Analyze maximum 8 pages total to keep focused.**
+### Step 1: Analyze Main URL and Discover Subpages
 
-### Step 2: Multi-Page Analysis
+**First**, use WebFetch on the main URL to:
+1. Extract the base domain
+2. Find all internal links in the page
+3. Identify the page type (Marketing, Docs, App, etc.)
 
-For each selected page, use WebFetch to extract:
+**URL Discovery Rules:**
+- Extract ALL internal links from the main page's HTML
+- Look for navigation menus, footers, and sitemap links
+- Identify common patterns:
 
-**Automatically Detectable:**
-- [ ] Color palette (primary, secondary, accent, background, text colors - exact hex values)
-- [ ] Typography (font families, sizes, weights, line heights)
-- [ ] CSS framework detected (Tailwind classes, Bootstrap, custom)
-- [ ] Component library hints (shadcn, Radix, Headless UI, Vuetify, Nuxt UI, PrimeVue)
-- [ ] Border radius values
-- [ ] Shadow styles
-- [ ] Spacing patterns
-- [ ] Layout system (grid type, container widths)
+| Pattern | URL Paths to Check |
+|---------|-------------------|
+| Documentation | `/docs`, `/documentation`, `/guide`, `/learn`, `/api` |
+| Pricing | `/pricing`, `/plans`, `/upgrade` |
+| Blog | `/blog`, `/articles`, `/news`, `/changelog` |
+| Features | `/features`, `/product`, `/solutions` |
+| Auth | `/login`, `/signin`, `/signup`, `/register` |
+| About | `/about`, `/team`, `/company`, `/careers` |
+| Contact | `/contact`, `/support`, `/help` |
+| Legal | `/privacy`, `/terms`, `/legal` |
+| Demo | `/demo`, `/playground`, `/examples` |
 
-**Page-Type Specific Extraction:**
-- **Docs pages:** Sidebar width, code block styling, heading hierarchy, search UI
-- **Pricing pages:** Card layout, feature list styling, CTA button variants
-- **Blog pages:** Article width, image sizing, author components, related posts
-- **Login pages:** Form field styling, button styling, social auth buttons, error states
-- **Dashboard pages:** Widget/card density, table styling, navigation patterns
+### Step 1.5: MANDATORY - Print URL List Before Analysis
 
-### Step 3: Cross-Page Consistency Analysis
+**⚠️ CRITICAL: You MUST print the complete URL list and get user confirmation BEFORE launching any analysis subagents.**
 
-After analyzing multiple pages, identify:
+After discovering URLs, ALWAYS output this to the user:
 
 ```markdown
-## Design System Consistency Report
+═══════════════════════════════════════════════════════════════════
+                    📋 URLs TO BE ANALYZED
+═══════════════════════════════════════════════════════════════════
 
-### Consistent Across All Pages:
-- Colors: [which colors are universal]
-- Typography: [which fonts appear everywhere]
-- Components: [which components look the same]
+Base Domain: [extracted domain]
+Total URLs: [count]
 
-### Variations by Page Type:
-| Element | Marketing | Docs | App/Dashboard |
-|---------|-----------|------|---------------|
-| Primary font | [x] | [y] | [z] |
-| Spacing density | Spacious | Moderate | Compact |
-| Border radius | 16px | 8px | 4px |
+## URLs for Analysis:
 
-### Notable Inconsistencies:
-- [List any style conflicts between pages]
+| # | URL | Page Type | Analysis |
+|---|-----|-----------|----------|
+| 1 | [full URL] | Marketing | WebFetch + Visual |
+| 2 | [full URL] | Documentation | WebFetch + Visual |
+| 3 | [full URL] | Pricing | WebFetch + Visual |
+| 4 | [full URL] | Blog | WebFetch + Visual |
+| ... | ... | ... | ... |
 
-### Recommendation:
-"The [page type] pages best represent the style you likely want for your app because [reason]."
+## Analysis Plan:
+- WebFetch subagents: [count] (1 per URL)
+- agent-browser subagents: [count] (1 per URL, 1 screenshot each)
+- Total subagents: [count × 2]
+- Total screenshots: [count] (1 full-page screenshot per URL)
+- Screenshots will be saved to: {BASE_DIR}/screenshots/
+
+═══════════════════════════════════════════════════════════════════
+```
+
+**Then ASK the user:**
+- "I found [N] URLs to analyze. Should I proceed with all of them?"
+- "Would you like to add any URLs to this list?"
+- "Would you like to remove any URLs from this list?"
+- "Are there specific page types you want me to prioritize?"
+
+**ONLY proceed to Step 2 after user confirms the URL list.**
+
+If the user wants changes:
+- Add requested URLs to the list
+- Remove unwanted URLs
+- Re-print the updated list
+- Confirm again before proceeding
+
+### Step 2: Launch Parallel Analysis Subagents
+
+**CRITICAL:** Launch ALL subagents in PARALLEL using Task tool with multiple tool calls in a single message.
+
+For each URL in your list, spawn TWO types of subagents simultaneously:
+
+#### A. WebFetch Subagents (Text/HTML Analysis)
+
+For each URL, spawn a subagent with this prompt template:
+
+```
+Use WebFetch to analyze [URL] and extract UI style information.
+
+Save your findings to: {BASE_DIR}/html/[sanitized-url-slug].md
+
+Extract and report:
+
+## URL: [URL]
+## Page Type: [identify type]
+
+### HTML/CSS Analysis
+
+#### Detected Frameworks
+- CSS Framework: [Tailwind/Bootstrap/custom - look for class patterns]
+- Component Library: [shadcn/Radix/Headless UI/etc - look for data attributes, class patterns]
+- Icon Library: [look for icon class patterns, SVG sources]
+
+#### Colors Found in HTML
+- Inline styles with colors: [list hex/rgb values]
+- CSS variable references: [--color-*, --bg-*, etc.]
+- Tailwind color classes: [bg-blue-500, text-gray-900, etc.]
+- Background colors: [list]
+- Text colors: [list]
+- Border colors: [list]
+- Accent/brand colors: [list]
+
+#### Typography from HTML
+- Font family declarations: [font-*, fontFamily]
+- Google Fonts/Adobe links: [extract font names]
+- Font size classes/values: [list]
+- Font weight patterns: [list]
+
+#### Spacing & Layout
+- Container patterns: [max-w-*, container, wrapper classes]
+- Grid/flex patterns: [grid-cols-*, flex, gap-*]
+- Padding/margin patterns: [p-*, m-*, px-*, etc.]
+- Border radius patterns: [rounded-*, border-radius values]
+
+#### Component Patterns
+- Button classes/patterns: [btn, button, primary, secondary]
+- Card patterns: [card, panel, box with shadows]
+- Form input patterns: [input styles, focus states]
+- Navigation patterns: [nav, sidebar, header]
+
+#### Meta Information
+- Theme color meta tags
+- Dark mode indicators: [dark:*, .dark, data-theme]
+- Viewport/responsive indicators
+
+### Raw CSS Classes Found
+[List unique CSS classes that indicate styling patterns]
+
+### Confidence Notes
+[What you're confident about vs. uncertain]
+```
+
+#### B. agent-browser Subagents (Visual Analysis)
+
+For each URL, spawn an agent-browser subagent with this prompt template:
+
+```
+Use the agent-browser skill to visually analyze [URL] for UI style extraction.
+
+## Your Tasks:
+
+### 1. Navigate to Page
+- Use agent-browser to navigate to [URL]
+- WAIT for the page to be COMPLETELY loaded (wait for network idle, all images loaded, no spinners)
+
+### 2. Take Full Page Screenshot
+Once the page is fully loaded, run this command:
+```
+agent-browser screenshot --full {BASE_DIR}/screenshots/[slug].png
+```
+
+This captures ONE full-page screenshot of the entire page.
+
+### 3. Visual Analysis
+After capturing the screenshot, analyze what you SEE in the full page screenshot.
+
+Save your visual analysis to: {BASE_DIR}/reports/[slug]-visual.md
+
+## Visual Analysis: [URL]
+
+### Screenshot
+- Path: {BASE_DIR}/screenshots/[slug].png
+
+### Overall Impression
+- Primary mood/feeling: [describe]
+- Visual density: [sparse/moderate/dense]
+- Color temperature: [warm/cool/neutral]
+- Professional level: [casual/professional/enterprise]
+
+### Color Analysis (from what you SEE)
+| Role | Approximate Color | Where Used |
+|------|-------------------|------------|
+| Primary brand | [color name + hex estimate] | [locations] |
+| Background | [color] | [locations] |
+| Text primary | [color] | [locations] |
+| Text secondary | [color] | [locations] |
+| Accent/CTA | [color] | [locations] |
+| Borders | [color] | [locations] |
+
+### Typography Visual Analysis
+- Heading style: [serif/sans-serif, weight, approximate size]
+- Body text: [font style, size, line spacing]
+- Special text: [any standout typography]
+- Text contrast: [high/medium/low]
+
+### Layout Observations
+- Grid structure: [describe what you see]
+- Whitespace usage: [generous/moderate/tight]
+- Content width: [narrow/medium/wide/full]
+- Symmetry: [symmetric/asymmetric]
+
+### Component Styles Observed
+- Buttons: [shape, size, shadow, border]
+- Cards: [shadow depth, border, radius]
+- Icons: [style - line/filled/duotone, size]
+- Images: [treatment - rounded, shadow, borders]
+- Forms (if visible): [input style, labels]
+- Navigation: [style, position, layout]
+- Footer: [style, content organization]
+
+### Style Classification Guess
+Based on visuals, this appears to match: [style from database]
+Confidence: [high/medium/low]
+Reasoning: [why]
+```
+
+#### Launch Pattern
+
+You MUST launch these as parallel subagents. Example for 3 URLs:
+
+```
+[Launch 6 subagents in parallel - 2 per URL]
+
+Task 1: WebFetch analysis for main URL
+Task 2: agent-browser visual analysis for main URL
+Task 3: WebFetch analysis for /docs
+Task 4: agent-browser visual analysis for /docs
+Task 5: WebFetch analysis for /pricing
+Task 6: agent-browser visual analysis for /pricing
+```
+
+### Step 3: Collect and Merge Subagent Results
+
+After all subagents complete:
+
+1. **Read all report files** from `{BASE_DIR}/reports/`
+2. **Review screenshots** from `{BASE_DIR}/screenshots/`
+3. **Cross-validate** findings between WebFetch and visual analysis
+
+```markdown
+## Cross-Validation Report
+
+### Color Comparison
+| Color Role | WebFetch Found | Visual Found | Confidence | Final Value |
+|------------|----------------|--------------|------------|-------------|
+| Primary | #xxx (from classes) | ~blue (from screenshot) | High | #xxx |
+| ... | | | | |
+
+### Typography Comparison
+| Element | WebFetch Found | Visual Found | Final |
+|---------|----------------|--------------|-------|
+| Heading font | Inter (from Google link) | Sans-serif, medium weight | Inter |
+| ... | | | |
+
+### Conflicts Resolved
+- [List any discrepancies and how you resolved them]
+
+### Visual-Only Discoveries
+- [Things only visible in screenshots, not in HTML]
+
+### HTML-Only Discoveries
+- [Things in HTML but not visually apparent - hidden elements, dark mode styles, etc.]
 ```
 
 ### Step 4: Match Against Style Reference Database
 
-**CRITICAL STEP:** Compare findings against the UI Design Styles Reference Database above.
+**CRITICAL STEP:** Compare merged findings against the UI Design Styles Reference Database above.
+
+Use BOTH the HTML analysis AND the visual screenshots to make this determination.
 
 Determine:
 1. **Primary Style Match:** Which style from the database best describes this site? (Pick 1)
@@ -198,6 +433,8 @@ Present the style matching:
 ### Primary Style: [Style Name]
 **Confidence:** [Strong/Partial/Weak]
 **Best represented on:** [which page type]
+**Evidence from HTML:** [what classes/patterns support this]
+**Evidence from Screenshots:** [what visual elements support this]
 **Matching characteristics:**
 - [bullet points of what matches]
 
@@ -218,46 +455,63 @@ Present the style matching:
 
 ### Step 5: Present Consolidated Findings
 
-Merge findings from all analyzed pages:
+Merge findings from all analyzed pages and both analysis methods:
 
 ```markdown
 ## Extracted Style Specification
 
+### Analysis Summary
+- **URLs Analyzed:** [count]
+- **WebFetch Reports:** [count] (1 per URL)
+- **Visual Screenshots:** [count] (1 per URL)
+- **Analysis Session:** {BASE_DIR}/
+
 ### Pages Analyzed
-1. [URL] - [Page Type] - [Primary style found]
-2. [URL] - [Page Type] - [Primary style found]
+| # | URL | Page Type | WebFetch | Visual | Style Match |
+|---|-----|-----------|----------|--------|-------------|
+| 1 | [url] | Marketing | ✓ | ✓ | [style] |
+| 2 | [url] | Docs | ✓ | ✓ | [style] |
 ...
 
 ### Style Classification
 [From Step 4]
 
-### Colors (Consolidated)
-| Role | Hex | Found On | Usage |
-|------|-----|----------|-------|
-| Primary | #xxx | All pages | Buttons, links |
-| Secondary | #xxx | Marketing only | CTAs |
-| ... | | | |
+### Colors (Consolidated from both sources)
+| Role | Hex | Source | Confidence | Usage |
+|------|-----|--------|------------|-------|
+| Primary | #xxx | WebFetch + Visual | High | Buttons, links |
+| Secondary | #xxx | Visual only | Medium | CTAs |
+| Background | #xxx | WebFetch (Tailwind) | High | Page bg |
+| ... | | | | |
 
 ### Typography
-- Headings: [Font Family], weights used: [...]
-- Body: [Font Family], base size: [...]
+- Headings: [Font Family] - Source: [Google Fonts link / Visual identification]
+- Body: [Font Family], base size: [value]
 - Mono/Code: [Font Family] (found on: docs, blog)
+- **Visual notes:** [any typography observations from screenshots]
 
 ### Framework/Libraries Detected
-- CSS: [Tailwind / Bootstrap / UnoCSS / Custom]
-- Components: [Detected library or "Unknown"]
-- Icons: [Detected or "Unknown"]
+- CSS: [Tailwind / Bootstrap / UnoCSS / Custom] - Confidence: [level]
+- Components: [Detected library] - Evidence: [class patterns / visual patterns]
+- Icons: [Detected or "Unknown"] - Evidence: [source]
 
-### Measurements
+### Measurements (from HTML classes + visual estimation)
 - Border radius: [values by page type]
 - Base spacing unit: [estimated]
 - Container max-width: [value]
 - Shadows: [description]
 
 ### Layout Patterns by Page Type
-- Marketing: [description]
-- Docs: [description]
-- App: [description]
+- Marketing: [description + screenshot reference]
+- Docs: [description + screenshot reference]
+- App: [description + screenshot reference]
+
+### Screenshots (1 per page)
+Reference these for visual details:
+- Main page: {BASE_DIR}/screenshots/main.png
+- Docs: {BASE_DIR}/screenshots/docs.png
+- Pricing: {BASE_DIR}/screenshots/pricing.png
+- [one screenshot per analyzed URL]
 ```
 
 ### Step 6: Interactive Clarification
@@ -270,6 +524,7 @@ After presenting findings, ASK the user:
 
 2. **Style Confirmation:**
    - "I classified this as **[Style]** with **[Secondary]** influences. Does that match your intent?"
+   - "Here are the screenshots - do they match what you expected? [reference screenshot paths]"
    - If new style proposed: "Should I add **[Proposed Style]** to the reference database?"
 
 3. **Missing Information:**
@@ -279,6 +534,7 @@ After presenting findings, ASK the user:
 4. **Contradictions or Choices:**
    - "The site uses both sharp (docs) and rounded (marketing) corners. Which do you prefer?"
    - "I see both card-based and list layouts. What's your primary content display preference?"
+   - "WebFetch found [X] but visually I saw [Y]. Which should we use?"
 
 5. **Deeper Style Questions:**
    - "How should loading states appear? (Skeletons / Spinners / Shimmer / None)"
@@ -311,26 +567,34 @@ After gathering all input, produce a complete specification file:
 > [Brief description of the primary style from the database, so future readers understand the intent]
 
 ## Source Analysis
-| URL | Page Type | Key Extractions |
-|-----|-----------|-----------------|
-| [url] | [type] | [what was extracted] |
-| ... | | |
+| URL | Page Type | Analysis Method | Key Extractions |
+|-----|-----------|-----------------|-----------------|
+| [url] | [type] | WebFetch + Visual | [what was extracted] |
+| ... | | | |
+
+## Visual References
+Screenshots (1 per page) available at: `{BASE_DIR}/screenshots/`
+| Page | Screenshot Path |
+|------|-----------------|
+| Main | {BASE_DIR}/screenshots/main.png |
+| Docs | {BASE_DIR}/screenshots/docs.png |
+| [page] | {BASE_DIR}/screenshots/[slug].png |
 
 ## Color System
-| Token | Light Mode | Dark Mode | Usage |
-|-------|------------|-----------|-------|
-| --color-primary | #xxx | #xxx | Buttons, links, accents |
-| --color-secondary | #xxx | #xxx | Secondary actions |
-| --color-accent | #xxx | #xxx | Highlights, badges |
-| --color-background | #xxx | #xxx | Page background |
-| --color-surface | #xxx | #xxx | Cards, elevated elements |
-| --color-text | #xxx | #xxx | Body text |
-| --color-text-muted | #xxx | #xxx | Secondary text |
-| --color-border | #xxx | #xxx | Dividers, input borders |
-| --color-error | #xxx | #xxx | Error states |
-| --color-warning | #xxx | #xxx | Warning states |
-| --color-success | #xxx | #xxx | Success states |
-| --color-info | #xxx | #xxx | Info states |
+| Token | Light Mode | Dark Mode | Source | Usage |
+|-------|------------|-----------|--------|-------|
+| --color-primary | #xxx | #xxx | [WebFetch/Visual/Both] | Buttons, links, accents |
+| --color-secondary | #xxx | #xxx | [source] | Secondary actions |
+| --color-accent | #xxx | #xxx | [source] | Highlights, badges |
+| --color-background | #xxx | #xxx | [source] | Page background |
+| --color-surface | #xxx | #xxx | [source] | Cards, elevated elements |
+| --color-text | #xxx | #xxx | [source] | Body text |
+| --color-text-muted | #xxx | #xxx | [source] | Secondary text |
+| --color-border | #xxx | #xxx | [source] | Dividers, input borders |
+| --color-error | #xxx | #xxx | [source] | Error states |
+| --color-warning | #xxx | #xxx | [source] | Warning states |
+| --color-success | #xxx | #xxx | [source] | Success states |
+| --color-info | #xxx | #xxx | [source] | Info states |
 
 ## Typography
 ```css
@@ -409,6 +673,7 @@ After gathering all input, produce a complete specification file:
 - Active/Press: [behavior]
 - Disabled: [appearance]
 - Focus: [ring style]
+- **Visual reference:** [screenshot path]
 
 ### Cards
 - Background: [solid/gradient/blur]
@@ -417,6 +682,7 @@ After gathering all input, produce a complete specification file:
 - Shadow: [style]
 - Hover: [behavior]
 - Padding: [value]
+- **Visual reference:** [screenshot path]
 
 ### Forms
 - Input style: [bordered/underline/filled]
@@ -425,6 +691,7 @@ After gathering all input, produce a complete specification file:
 - Error display: [below/tooltip/border-color]
 - Focus state: [ring/border/glow]
 - Placeholder style: [color, italic?]
+- **Visual reference:** [screenshot path]
 
 ### Tables
 - Header style: [sticky/scrollable, background]
@@ -440,6 +707,7 @@ After gathering all input, produce a complete specification file:
 - Mobile: [drawer/bottom-bar/hamburger]
 - Active indicator: [background/border/icon]
 - Hover state: [description]
+- **Visual reference:** [screenshot path]
 
 ### Modals/Dialogs
 - Overlay: [color, opacity]
@@ -467,10 +735,16 @@ Based on **[Primary Style]**, avoid:
 - [User-specified anti-patterns]
 
 ## Reference URLs
-| URL | What to reference |
-|-----|-------------------|
-| [url] | [specific elements] |
-| ... | |
+| URL | What to reference | Screenshot |
+|-----|-------------------|------------|
+| [url] | [specific elements] | [path] |
+| ... | | |
+
+## Analysis Artifacts
+All analysis files preserved at: `{BASE_DIR}/`
+- Screenshots: `{BASE_DIR}/screenshots/`
+- HTML reports: `{BASE_DIR}/html/`
+- Visual reports: `{BASE_DIR}/reports/`
 
 ## Notes
 [Any additional context or decisions made during specification]
@@ -495,3 +769,62 @@ Ask the user:
 - "Want me to generate a Tailwind config (`tailwind.config.ts`) based on these values?"
 - "Should I create a CSS variables file for these tokens?"
 - "Should I create example components demonstrating this style?"
+- "Want me to keep the `{BASE_DIR}/` directory or clean it up after generating the spec?"
+- "Should I move the screenshots to a different location (e.g., `docs/assets/`)?"
+
+---
+
+## Subagent Execution Reference
+
+### WebFetch Subagent Template
+
+```
+subagent_type: "general-purpose"
+prompt: |
+  Use WebFetch to analyze {URL} for UI style extraction.
+
+  Your task:
+  1. Fetch the URL content
+  2. Extract all CSS classes, inline styles, and framework indicators
+  3. Identify colors, typography, spacing patterns
+  4. Detect frameworks (Tailwind, Bootstrap, etc.)
+  5. Save findings to {BASE_DIR}/html/{slug}.md
+
+  Be thorough - extract every style-related class and pattern you find.
+```
+
+### agent-browser Subagent Template
+
+```
+subagent_type: "general-purpose"
+prompt: |
+  Use the agent-browser skill to visually analyze {URL}.
+
+  Your task:
+  1. Navigate to the URL using agent-browser
+  2. WAIT for the page to be COMPLETELY loaded (network idle, all images loaded)
+  3. Take ONE full-page screenshot using this command:
+     agent-browser screenshot --full {BASE_DIR}/screenshots/{slug}.png
+  4. Analyze colors, typography, spacing, shadows from what you SEE in the screenshot
+  5. Save visual analysis to {BASE_DIR}/reports/{slug}-visual.md
+
+  Only ONE screenshot per page. The --full flag captures the entire scrollable page.
+```
+
+### Parallel Execution Pattern
+
+When you have URLs to analyze, ALWAYS launch subagents in parallel:
+
+```
+For URLs: [main, /docs, /pricing]
+
+Launch in ONE message with 6 Task tool calls:
+1. Task: WebFetch for main
+2. Task: agent-browser for main
+3. Task: WebFetch for /docs
+4. Task: agent-browser for /docs
+5. Task: WebFetch for /pricing
+6. Task: agent-browser for /pricing
+```
+
+This maximizes efficiency by running all analyses concurrently.
