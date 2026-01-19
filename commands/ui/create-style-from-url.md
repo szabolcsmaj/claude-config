@@ -2,6 +2,8 @@
 
 You are helping the user create a comprehensive UI style specification by analyzing URLs using **dual analysis**: text-based HTML extraction AND visual screenshot analysis.
 
+**Purpose:** This analysis produces a **style guide** that serves as the foundation for creating new page specifications. The resulting `STYLE_GUIDE.md` ensures visual consistency when designing and implementing new pages or features.
+
 ## Input
 
 Reference URL: $ARGUMENTS
@@ -785,15 +787,32 @@ If the user confirms a new style should be added, tell them:
 
 I recommend adding it to the **[suggested category]** section."
 
-### Step 9: Offer Next Steps
+### Step 9: Save Style Guide and Offer Next Steps
 
-Ask the user:
-- "Should I save this specification to a file in your project? (e.g., `docs/ui-style-spec.md` or `UI_STYLE.md`)"
-- "Want me to generate a Tailwind config (`tailwind.config.ts`) based on these values?"
-- "Should I create a CSS variables file for these tokens?"
+**First, always ask:**
+- "Should I save this style specification as `{BASE_DIR}/STYLE_GUIDE.md`? This will serve as the reference for creating new page specifications."
+
+**Then, based on the detected libraries/tools, offer to create relevant config files:**
+
+| Detected Technology | Offer to Create |
+|---------------------|-----------------|
+| Tailwind CSS | `{BASE_DIR}/tailwind.config.ts` with colors, fonts, spacing, border-radius presets |
+| UnoCSS | `{BASE_DIR}/uno.config.ts` with theme tokens and shortcuts |
+| CSS Variables | `{BASE_DIR}/variables.css` with all design tokens |
+| shadcn/ui | `{BASE_DIR}/components.json` with style presets |
+| Theme (dark/light) | `{BASE_DIR}/theme.ts` with theme configuration |
+
+**Ask the user which additional files they want:**
+- "Based on the analysis, I detected **[libraries/tools]**. Would you like me to generate any of these config files?"
+  - `tailwind.config.ts` - Tailwind theme with extracted colors, fonts, spacing, and border-radius
+  - `variables.css` - CSS custom properties for all design tokens
+  - `theme.ts` - TypeScript theme object for CSS-in-JS solutions
+  - `[other relevant configs based on detected stack]`
+
+**Additional options:**
 - "Should I create example components demonstrating this style?"
-- "Want me to keep the `{BASE_DIR}/` directory or clean it up after generating the spec?"
 - "Should I move the screenshots to a different location (e.g., `docs/assets/`)?"
+- "Do you want to keep all analysis artifacts in `{BASE_DIR}/` or clean up intermediate files?"
 
 ---
 
