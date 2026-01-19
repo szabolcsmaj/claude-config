@@ -156,8 +156,9 @@ BASE_DIR="./style-analysis-{sanitized-domain}"
 3. Identify the page type (Marketing, Docs, App, etc.)
 
 **URL Discovery Rules:**
-- Extract ALL internal links from the main page's HTML
+- Extract internal links from the main page's HTML
 - Look for navigation menus, footers, and sitemap links
+- **CRITICAL: Limit to 1 URL per page type** - Do NOT analyze multiple pages of the same type (e.g., if you find 5 blog posts, only include 1 representative blog post URL)
 - Identify common patterns:
 
 | Pattern | URL Paths to Check |
@@ -171,6 +172,25 @@ BASE_DIR="./style-analysis-{sanitized-domain}"
 | Contact | `/contact`, `/support`, `/help` |
 | Legal | `/privacy`, `/terms`, `/legal` |
 | Demo | `/demo`, `/playground`, `/examples` |
+
+**⚠️ ONE URL PER PAGE TYPE RULE:**
+
+When you discover multiple URLs of the same page type, select only ONE representative URL. Pages of the same type share the same layout/template with different content.
+
+| Page Type | Example: Multiple Found | Select Only |
+|-----------|------------------------|-------------|
+| Blog Post | `/blog/post-1`, `/blog/post-2`, `/blog/post-3` | `/blog/post-1` (just 1) |
+| Documentation Page | `/docs/getting-started`, `/docs/api-reference` | `/docs/getting-started` (just 1) |
+| Product Page | `/products/item-a`, `/products/item-b` | `/products/item-a` (just 1) |
+| Team Member | `/team/john`, `/team/jane` | `/team/john` (just 1) |
+| Case Study | `/case-studies/company-a`, `/case-studies/company-b` | `/case-studies/company-a` (just 1) |
+
+**Selection criteria for the ONE representative URL:**
+1. Prefer the first/most prominent link found
+2. Prefer pages with more visual content (images, components)
+3. Prefer pages that appear to be complete (not empty or placeholder)
+
+**Exception:** Different page TYPES are allowed (e.g., `/blog` index page AND one `/blog/post-1` detail page are different types - index vs. detail)
 
 ### Step 1.5: MANDATORY - Print URL List Before Analysis
 
@@ -186,15 +206,17 @@ After discovering URLs, ALWAYS output this to the user:
 Base Domain: [extracted domain]
 Total URLs: [count]
 
-## URLs for Analysis:
+## URLs for Analysis (1 per page type):
 
-| # | URL | Page Type | Analysis |
-|---|-----|-----------|----------|
-| 1 | [full URL] | Marketing | WebFetch + Visual |
-| 2 | [full URL] | Documentation | WebFetch + Visual |
-| 3 | [full URL] | Pricing | WebFetch + Visual |
-| 4 | [full URL] | Blog | WebFetch + Visual |
-| ... | ... | ... | ... |
+| # | URL | Page Type | Analysis | Duplicates Skipped |
+|---|-----|-----------|----------|-------------------|
+| 1 | [full URL] | Marketing | WebFetch + Visual | - |
+| 2 | [full URL] | Documentation | WebFetch + Visual | 3 other doc pages |
+| 3 | [full URL] | Pricing | WebFetch + Visual | - |
+| 4 | [full URL] | Blog Post | WebFetch + Visual | 5 other blog posts |
+| ... | ... | ... | ... | ... |
+
+**Note:** Only 1 URL per page type is analyzed. Pages with identical layouts (same type, different content) are skipped.
 
 ## Analysis Plan:
 - WebFetch subagents: [count] (1 per URL)
@@ -207,9 +229,10 @@ Total URLs: [count]
 ```
 
 **Then ASK the user:**
-- "I found [N] URLs to analyze. Should I proceed with all of them?"
+- "I found [N] unique page types to analyze (duplicates with same layout were skipped). Should I proceed with all of them?"
 - "Would you like to add any URLs to this list?"
 - "Would you like to remove any URLs from this list?"
+- "For any page type with skipped duplicates, would you prefer a different representative URL?"
 - "Are there specific page types you want me to prioritize?"
 
 **ONLY proceed to Step 2 after user confirms the URL list.**
