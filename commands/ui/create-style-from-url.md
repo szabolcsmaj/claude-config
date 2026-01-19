@@ -118,6 +118,114 @@ Use this reference to classify analyzed pages. Match against one or more styles,
 
 ---
 
+## Style-Based Inference Defaults
+
+When analysis doesn't capture certain states or behaviors, use these style-specific defaults. **These are inferences, not extractions.**
+
+### Responsive Breakpoints by Style
+
+| Style | Mobile | Tablet | Desktop | Wide | Notes |
+|-------|--------|--------|---------|------|-------|
+| **Linear-Style** | 640px | 768px | 1024px | 1280px | Sidebar collapses at tablet |
+| **Notion-Style** | 640px | 768px | 1024px | 1440px | Full-width option common |
+| **Vercel-Style** | 640px | 768px | 1024px | 1280px | Content max-width ~720px |
+| **Stripe-Style** | 640px | 768px | 1024px | 1440px | Marketing uses wider breakpoints |
+| **Dashboard Dense** | 480px | 768px | 1024px | 1440px | Often desktop-first |
+| **Card-Based** | 640px | 768px | 1024px | 1280px | Cards stack on mobile |
+| **Editorial/Magazine** | 640px | 768px | 1024px | 1200px | Narrow content column |
+| **Corporate Minimal** | 640px | 768px | 1024px | 1280px | Standard Tailwind defaults |
+| **Material Design** | 600px | 905px | 1240px | 1440px | Material breakpoints |
+| **Glassmorphism** | 640px | 768px | 1024px | 1280px | Effects may simplify on mobile |
+| **Default** | 640px | 768px | 1024px | 1280px | Tailwind defaults |
+
+### Loading States by Style
+
+| Style | Primary Loading | Skeleton Style | Spinner Style | Notes |
+|-------|-----------------|----------------|---------------|-------|
+| **Linear-Style** | Skeleton | Subtle shimmer, matches bg | Thin circular, primary color | Minimal, non-distracting |
+| **Notion-Style** | Skeleton | Block-shaped, gray pulse | Dots or subtle spinner | Matches block-based UI |
+| **Vercel-Style** | Skeleton | Clean gray shimmer | Minimal line spinner | Very subtle, fast |
+| **Stripe-Style** | Skeleton + Shimmer | Gradient shimmer effect | Branded spinner | Polished feel |
+| **Dashboard Dense** | Skeleton | Compact, matches data density | Small inline spinners | Per-widget loading |
+| **Card-Based** | Skeleton | Card-shaped placeholders | Center of card | Preserve layout during load |
+| **Material Design** | Progress indicator | Linear or circular progress | Material circular | Follows Material spec |
+| **Glassmorphism** | Blur + Skeleton | Frosted placeholder | Glowing ring spinner | Maintains glass effect |
+| **Corporate Minimal** | Skeleton | Simple gray blocks | Subtle spinner | Professional, understated |
+| **Brutalist** | Text indicator | "Loading..." text | None or basic | Intentionally raw |
+| **Default** | Skeleton | Gray pulse animation | Circular spinner | Standard approach |
+
+### Empty States by Style
+
+| Style | Illustration | Copy Style | CTA Approach | Layout |
+|-------|--------------|------------|--------------|--------|
+| **Linear-Style** | Minimal/geometric | Concise, action-oriented | Ghost button | Centered, compact |
+| **Notion-Style** | Friendly illustration | Helpful, guides next action | Inline suggestions | Centered with tips |
+| **Vercel-Style** | None or minimal icon | Direct, technical | Primary button | Minimal, centered |
+| **Stripe-Style** | Custom illustration | Friendly but professional | Clear CTA button | Centered, spacious |
+| **Dashboard Dense** | Small icon only | Brief, functional | Link or small button | Fits in widget space |
+| **Card-Based** | Placeholder card | Suggests creating content | "Add" button prominent | Card-shaped empty state |
+| **Material Design** | Material icon/illustration | Follows Material guidelines | FAB or button | Centered, follows spec |
+| **Corporate Minimal** | Subtle illustration | Professional, helpful | Secondary button | Generous whitespace |
+| **Brutalist** | None | Plain text, direct | Text link | Raw, minimal |
+| **Default** | Simple icon | Helpful message | Primary CTA | Centered |
+
+### Error States by Style
+
+| Style | Display Method | Severity Indication | Recovery UX | Toast Position |
+|-------|----------------|---------------------|-------------|----------------|
+| **Linear-Style** | Toast + inline | Color-coded borders | Retry button, clear message | Bottom-right |
+| **Notion-Style** | Inline + toast | Red highlight, icon | Undo option, helpful text | Bottom-center |
+| **Vercel-Style** | Toast | Minimal, red accent | Clear retry action | Top-right |
+| **Stripe-Style** | Inline + toast | Color + icon + text | Step-by-step recovery | Top-right |
+| **Dashboard Dense** | Inline badges | Compact indicators | Quick actions | Bottom-right |
+| **Material Design** | Snackbar | Material error colors | Action button in snackbar | Bottom-center |
+| **Corporate Minimal** | Toast + inline | Subtle but clear | Professional error copy | Top-right |
+| **Default** | Toast | Red color, icon | Retry button | Top-right |
+
+### Mobile Navigation by Style
+
+| Style | Primary Pattern | Gesture Support | Bottom Nav | Hamburger Style |
+|-------|-----------------|-----------------|------------|-----------------|
+| **Linear-Style** | Slide-out drawer | Swipe to open | No | Minimal icon |
+| **Notion-Style** | Bottom sheet + drawer | Swipe gestures | Tab bar optional | Menu icon |
+| **Vercel-Style** | Hamburger → drawer | Minimal | No | Simple icon |
+| **Stripe-Style** | Hamburger → overlay | Smooth transitions | No | Animated icon |
+| **Dashboard Dense** | Bottom nav + hamburger | Limited | Yes, 4-5 items | Compact |
+| **Card-Based** | Bottom nav | Swipe between cards | Yes | Standard |
+| **Material Design** | Bottom nav / drawer | Material gestures | Yes, Material spec | Material hamburger |
+| **Gesture-Based** | Bottom nav + gestures | Full swipe support | Yes | Minimal or none |
+| **Corporate Minimal** | Hamburger → overlay | Basic | Optional | Clean icon |
+| **Default** | Hamburger → drawer | Basic swipe | Optional | Standard icon |
+
+### Accessibility Defaults by Style
+
+| Style | Min Contrast | Focus Style | Touch Target | Motion | Screen Reader |
+|-------|--------------|-------------|--------------|--------|---------------|
+| **Linear-Style** | 4.5:1 | Ring, primary color | 44px | Reduced motion support | ARIA labels |
+| **Notion-Style** | 4.5:1 | Outline + background | 44px | Respects prefers-reduced-motion | Full ARIA |
+| **Vercel-Style** | 7:1 (high contrast) | Subtle ring | 44px | Minimal animations | Semantic HTML |
+| **Stripe-Style** | 4.5:1 | Branded focus ring | 48px | Respects preference | Comprehensive |
+| **Dashboard Dense** | 4.5:1 | Clear outline | 32px min | Performance-focused | Data table ARIA |
+| **Material Design** | 4.5:1 | Material ripple + outline | 48px | Material motion | Material a11y |
+| **Dark Mode Native** | 4.5:1 on dark | Glow/ring | 44px | Dark-optimized | ARIA labels |
+| **Default** | 4.5:1 WCAG AA | 2px ring, offset | 44px | prefers-reduced-motion | ARIA landmarks |
+
+### Page Layout Patterns by Style
+
+| Style | Content Width | Sidebar | Header | Grid System |
+|-------|---------------|---------|--------|-------------|
+| **Linear-Style** | Full - sidebar | Collapsible, 240-280px | Fixed, compact | Custom flex/grid |
+| **Notion-Style** | Centered, max 900px | Collapsible, 240px | Minimal/hidden | Block-based |
+| **Vercel-Style** | Centered, max 720px | None or minimal | Fixed, minimal | Simple centered |
+| **Stripe-Style** | Varied by page type | Docs: 280px, App: none | Contextual | 12-column |
+| **Dashboard Dense** | Full width | Fixed, 200-260px | Compact with breadcrumbs | Dense grid |
+| **Card-Based** | Full with padding | Optional | Standard | Masonry or grid |
+| **Editorial/Magazine** | Narrow, 680-720px | None | Prominent | Single column |
+| **Corporate Minimal** | Centered, max 1200px | Optional | Clean, spacious | 12-column |
+| **Default** | Centered, max 1280px | Optional | Standard | 12-column |
+
+---
+
 ## Your Task
 
 ### Step 0: Initialize Analysis Environment
@@ -478,6 +586,103 @@ Present the style matching:
 - [What differs from the matched style's typical implementation]
 ```
 
+### Step 4.5: Style-Based Inference for Missing Elements
+
+**CRITICAL:** After classifying the style, use the "Style-Based Inference Defaults" tables above to fill in gaps that cannot be determined from the analyzed pages.
+
+**Determine what's missing from the analysis:**
+
+```markdown
+## Analysis Coverage Report
+
+### States/Views Captured:
+- [ ] Default/normal state (likely ✓ from screenshots)
+- [ ] Hover states (may be visible if captured during interaction)
+- [ ] Active/pressed states
+- [ ] Focus states
+- [ ] Loading states (only if page happened to be loading)
+- [ ] Empty states (only if visible on analyzed pages)
+- [ ] Error states (only if visible on analyzed pages)
+- [ ] Success states
+- [ ] Disabled states
+
+### Viewports Captured:
+- [ ] Desktop only (most likely from agent-browser)
+- [ ] Mobile viewport (if specifically requested)
+- [ ] Tablet viewport
+
+### What We CANNOT Determine from This Analysis:
+- [ ] Responsive breakpoints (screenshots are single viewport)
+- [ ] Loading state appearance (unless page was loading during capture)
+- [ ] Empty state design (unless visible on analyzed pages)
+- [ ] Error handling UI (unless visible on analyzed pages)
+- [ ] Mobile navigation pattern (unless mobile screenshots taken)
+- [ ] Accessibility specifics (focus rings, motion preferences)
+- [ ] Page layout variations at different breakpoints
+```
+
+**Apply Style-Based Inference:**
+
+Based on the **[Primary Style]** classification, look up defaults in the inference tables:
+
+```markdown
+## Style-Based Inferences (for [Primary Style])
+
+> ⚠️ **INFERRED** - The following are style-consistent suggestions, NOT extracted from the analyzed URLs.
+> Override these if you have access to actual designs or different requirements.
+
+### 🔮 Responsive Breakpoints (Inferred)
+| Breakpoint | Value | Behavior |
+|------------|-------|----------|
+| Mobile | [from table] | [behavior from table] |
+| Tablet | [from table] | |
+| Desktop | [from table] | |
+| Wide | [from table] | |
+
+### 🔮 Loading States (Inferred)
+- **Primary method:** [from table]
+- **Skeleton style:** [from table]
+- **Spinner style:** [from table]
+- **Notes:** [from table]
+
+### 🔮 Empty States (Inferred)
+- **Illustration:** [from table]
+- **Copy style:** [from table]
+- **CTA approach:** [from table]
+- **Layout:** [from table]
+
+### 🔮 Error States (Inferred)
+- **Display method:** [from table]
+- **Severity indication:** [from table]
+- **Recovery UX:** [from table]
+- **Toast position:** [from table]
+
+### 🔮 Mobile Navigation (Inferred)
+- **Primary pattern:** [from table]
+- **Gesture support:** [from table]
+- **Bottom nav:** [from table]
+- **Hamburger style:** [from table]
+
+### 🔮 Accessibility Defaults (Inferred)
+- **Min contrast:** [from table]
+- **Focus style:** [from table]
+- **Touch target:** [from table]
+- **Motion:** [from table]
+- **Screen reader:** [from table]
+
+### 🔮 Page Layout (Inferred)
+- **Content width:** [from table]
+- **Sidebar:** [from table]
+- **Header:** [from table]
+- **Grid system:** [from table]
+```
+
+**Ask user to confirm or override inferences:**
+- "I've inferred [X, Y, Z] based on the **[Style]** classification. These are marked with 🔮 in the spec. Would you like to:"
+  - Accept these defaults
+  - Analyze additional URLs that show these states
+  - Specify different values
+
 ### Step 5: Present Consolidated Findings
 
 Merge findings from all analyzed pages and both analysis methods:
@@ -577,25 +782,54 @@ After presenting findings, ASK the user:
 
 ### Step 7: Generate Final Specification
 
-After gathering all input, produce a complete specification file:
+After gathering all input, produce a complete specification file.
+
+**IMPORTANT: Use these markers consistently throughout the specification:**
+
+| Marker | Meaning | When to Use |
+|--------|---------|-------------|
+| 📷 | **Extracted (Visual)** | Observed in screenshots |
+| 🔍 | **Extracted (HTML)** | Found in HTML/CSS analysis |
+| 📷🔍 | **Extracted (Both)** | Confirmed by both visual and HTML analysis |
+| 🔮 | **Inferred** | Derived from style classification, not visible in analysis |
+| ✏️ | **User-specified** | Explicitly provided by the user during clarification |
+| ⚠️ | **Needs verification** | Estimated values that should be verified |
 
 ```markdown
 # UI Style Specification: [Project Name]
 
+## Specification Legend
+
+| Symbol | Meaning |
+|--------|---------|
+| 📷 | **Extracted from screenshots** - Observed in visual analysis |
+| 🔍 | **Extracted from HTML/CSS** - Found in WebFetch analysis |
+| 📷🔍 | **Confirmed by both** - Cross-validated from visual and HTML |
+| 🔮 | **Inferred from style** - Derived from [Primary Style] conventions |
+| ✏️ | **User-specified** - Explicitly provided by user during analysis |
+| ⚠️ | **Needs verification** - Estimated, verify against actual implementation |
+
+> **Coverage Summary:**
+> - URLs analyzed: [N]
+> - Page types covered: [list]
+> - Viewports captured: Desktop only / Multiple
+> - States visible: [list what was actually captured]
+> - Inferred sections: [list what was inferred]
+
 ## Design Direction
-- **Primary Style:** [Style from database]
-- **Secondary Influences:** [Other styles]
+- **Primary Style:** [Style from database] 📷🔍
+- **Secondary Influences:** [Other styles] 📷🔍
 - **Inspiration:** [URLs analyzed]
-- **Mood:** [2-3 descriptive words]
+- **Mood:** [2-3 descriptive words] 📷
 
 ## Style Reference
 > [Brief description of the primary style from the database, so future readers understand the intent]
 
 ## Source Analysis
-| URL | Page Type | Analysis Method | Key Extractions |
-|-----|-----------|-----------------|-----------------|
-| [url] | [type] | WebFetch + Visual | [what was extracted] |
-| ... | | | |
+| URL | Page Type | Analysis Method | Key Extractions | Source |
+|-----|-----------|-----------------|-----------------|--------|
+| [url] | [type] | WebFetch + Visual | [what was extracted] | 📷🔍 |
+| ... | | | | |
 
 ## Visual References
 Screenshots (1 per page) available at: `{BASE_DIR}/screenshots/`
@@ -605,21 +839,23 @@ Screenshots (1 per page) available at: `{BASE_DIR}/screenshots/`
 | Docs | {BASE_DIR}/screenshots/docs.png |
 | [page] | {BASE_DIR}/screenshots/[slug].png |
 
-## Color System
-| Token | Light Mode | Dark Mode | Source | Usage |
-|-------|------------|-----------|--------|-------|
-| --color-primary | #xxx | #xxx | [WebFetch/Visual/Both] | Buttons, links, accents |
-| --color-secondary | #xxx | #xxx | [source] | Secondary actions |
-| --color-accent | #xxx | #xxx | [source] | Highlights, badges |
-| --color-background | #xxx | #xxx | [source] | Page background |
-| --color-surface | #xxx | #xxx | [source] | Cards, elevated elements |
-| --color-text | #xxx | #xxx | [source] | Body text |
-| --color-text-muted | #xxx | #xxx | [source] | Secondary text |
-| --color-border | #xxx | #xxx | [source] | Dividers, input borders |
-| --color-error | #xxx | #xxx | [source] | Error states |
-| --color-warning | #xxx | #xxx | [source] | Warning states |
-| --color-success | #xxx | #xxx | [source] | Success states |
-| --color-info | #xxx | #xxx | [source] | Info states |
+## Color System 📷🔍
+| Token | Light Mode | Dark Mode | Usage | Source |
+|-------|------------|-----------|-------|--------|
+| --color-primary | #xxx | #xxx | Buttons, links, accents | 📷🔍 |
+| --color-secondary | #xxx | #xxx | Secondary actions | 📷🔍 |
+| --color-accent | #xxx | #xxx | Highlights, badges | 📷🔍 |
+| --color-background | #xxx | #xxx | Page background | 🔍 |
+| --color-surface | #xxx | #xxx | Cards, elevated elements | 📷🔍 |
+| --color-text | #xxx | #xxx | Body text | 📷🔍 |
+| --color-text-muted | #xxx | #xxx | Secondary text | 📷 |
+| --color-border | #xxx | #xxx | Dividers, input borders | 📷🔍 |
+| --color-error | #xxx | #xxx | Error states | 🔍/🔮 |
+| --color-warning | #xxx | #xxx | Warning states | 🔍/🔮 |
+| --color-success | #xxx | #xxx | Success states | 🔍/🔮 |
+| --color-info | #xxx | #xxx | Info states | 🔍/🔮 |
+
+> **Note:** Status colors marked 🔮 are inferred if not visible on analyzed pages.
 
 ## Typography
 ```css
@@ -740,14 +976,260 @@ Screenshots (1 per page) available at: `{BASE_DIR}/screenshots/`
 - Animation: [fade/scale/slide]
 - Close button: [position, style]
 
-### Feedback & States
-- Loading: [skeleton/spinner/shimmer]
-- Empty: [illustration/text/CTA]
-- Error: [toast/inline/modal]
-- Success: [toast/inline/redirect]
-- Toast position: [top-right/bottom-right/top-center/bottom-center]
+### Feedback & States 📷/🔍/🔮
+- Loading: [skeleton/spinner/shimmer] [📷 if visible / 🔮 if inferred]
+- Empty: [illustration/text/CTA] [📷 if visible / 🔮 if inferred]
+- Error: [toast/inline/modal] [📷 if visible / 🔮 if inferred]
+- Success: [toast/inline/redirect] [📷 if visible / 🔮 if inferred]
+- Toast position: [top-right/bottom-right/top-center/bottom-center] [📷/🔮]
 
-## Micro-Interactions
+---
+
+## 🔮 Responsive Design (Inferred from [Primary Style])
+
+> ⚠️ This section is **INFERRED** based on style classification. Screenshots captured desktop viewport only.
+> Verify these values match your actual requirements.
+
+### Breakpoints
+| Name | Value | Layout Changes | Source |
+|------|-------|----------------|--------|
+| sm (Mobile) | [X]px | [Stacked layouts, hidden sidebar, etc.] | 🔮 |
+| md (Tablet) | [X]px | [Sidebar collapses, grid adjusts] | 🔮 |
+| lg (Desktop) | [X]px | [Full layout visible] | 🔮 |
+| xl (Wide) | [X]px | [Max-width containers, centered] | 🔮 |
+
+### Responsive Behavior
+- **Sidebar:** [Behavior at each breakpoint] 🔮
+- **Navigation:** [How nav changes] 🔮
+- **Grid:** [Column changes] 🔮
+- **Typography:** [Size scaling] 🔮
+- **Spacing:** [Density changes] 🔮
+
+---
+
+## 🔮 Loading States (Inferred from [Primary Style])
+
+> ⚠️ This section is **INFERRED**. No loading states were captured during analysis.
+
+### Primary Loading Pattern
+- **Method:** [Skeleton / Spinner / Shimmer / Progress bar] 🔮
+- **Style:** [Description from style table] 🔮
+
+### Skeleton Loaders 🔮
+```css
+/* Skeleton base */
+.skeleton {
+  background: var(--color-surface);
+  animation: [shimmer/pulse] [duration] ease-in-out infinite;
+}
+```
+- Shape: [Matches content shape / Rounded rectangles / Circles for avatars]
+- Animation: [Shimmer gradient / Pulse opacity / None]
+- Duration: [0.8s-1.5s typical]
+
+### Spinner Style 🔮
+- Type: [Circular / Dots / Line / Brand-specific]
+- Size: [sm: 16px, md: 24px, lg: 32px]
+- Color: [Primary / Muted / Contextual]
+- Placement: [Centered / Inline / Button replacement]
+
+### Loading UX Patterns 🔮
+- **Page load:** [Full skeleton / Spinner overlay / Progressive]
+- **Button loading:** [Spinner replaces text / Spinner beside text / Disabled + spinner]
+- **Infinite scroll:** [Bottom spinner / Skeleton cards / "Load more" button]
+- **Form submit:** [Button spinner / Overlay / Inline]
+
+---
+
+## 🔮 Empty States (Inferred from [Primary Style])
+
+> ⚠️ This section is **INFERRED**. No empty states were visible on analyzed pages.
+
+### Empty State Pattern
+- **Illustration:** [None / Icon / Custom illustration / Lottie animation] 🔮
+- **Copy style:** [Friendly / Technical / Action-oriented] 🔮
+- **CTA approach:** [Primary button / Ghost button / Text link / None] 🔮
+
+### Empty State Template 🔮
+```
+┌─────────────────────────────────────┐
+│                                     │
+│         [Icon/Illustration]         │
+│                                     │
+│          [Primary message]          │
+│       [Secondary description]       │
+│                                     │
+│           [ CTA Button ]            │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+### Context-Specific Empty States 🔮
+| Context | Message Tone | CTA | Icon |
+|---------|--------------|-----|------|
+| No search results | Helpful | Modify search | Search icon |
+| Empty list | Encouraging | Create first item | Plus/Add icon |
+| No data | Informative | Connect data source | Data icon |
+| No permissions | Explanatory | Request access | Lock icon |
+
+---
+
+## 🔮 Error States (Inferred from [Primary Style])
+
+> ⚠️ This section is **INFERRED**. No error states were visible on analyzed pages.
+
+### Error Display Methods 🔮
+- **Toast notifications:** [Position, duration, style]
+- **Inline errors:** [Below field / Tooltip / Border color change]
+- **Page-level errors:** [Banner / Modal / Dedicated page]
+- **Field validation:** [On blur / On submit / Real-time]
+
+### Error Severity Levels 🔮
+| Level | Color | Icon | Display | Auto-dismiss |
+|-------|-------|------|---------|--------------|
+| Info | --color-info | Info circle | Toast | Yes, 5s |
+| Warning | --color-warning | Warning triangle | Toast/Inline | No |
+| Error | --color-error | X circle | Inline + Toast | No |
+| Critical | --color-error | Alert | Modal | No |
+
+### Error Recovery UX 🔮
+- **Retry mechanism:** [Button / Auto-retry / Manual refresh]
+- **Error messages:** [Technical / User-friendly / Both with details toggle]
+- **Undo support:** [Toast with undo / No undo]
+
+### Toast Configuration 🔮
+```css
+--toast-position: [top-right / bottom-right / top-center / bottom-center];
+--toast-duration: [3000ms / 5000ms / persistent];
+--toast-max-visible: [3 / 5 / unlimited];
+--toast-animation: [slide / fade / scale];
+```
+
+---
+
+## 🔮 Mobile Patterns (Inferred from [Primary Style])
+
+> ⚠️ This section is **INFERRED**. Analysis captured desktop viewport only.
+
+### Mobile Navigation 🔮
+- **Primary pattern:** [Bottom nav / Hamburger drawer / Tab bar]
+- **Hamburger menu:** [Slide from left / Slide from right / Full overlay]
+- **Bottom navigation:** [Yes/No, number of items]
+- **Gesture support:** [Swipe to open menu / Swipe between tabs / Pull to refresh]
+
+### Mobile Layout Adjustments 🔮
+- **Sidebar:** [Hidden / Bottom sheet / Collapsible]
+- **Tables:** [Horizontal scroll / Card view / Responsive columns]
+- **Forms:** [Full width inputs / Stacked labels]
+- **Modals:** [Full screen / Bottom sheet / Centered]
+- **Navigation:** [Sticky header / Hide on scroll / Always visible]
+
+### Touch Targets 🔮
+- **Minimum size:** [44px / 48px] (following [Primary Style] conventions)
+- **Spacing between targets:** [8px minimum]
+- **Touch feedback:** [Ripple / Highlight / Scale]
+
+### Mobile-Specific Components 🔮
+- **Action sheets:** [iOS-style / Material / Custom]
+- **Pull to refresh:** [Spinner / Custom animation]
+- **Swipe actions:** [Delete / Archive / Custom actions]
+- **Floating action button:** [Yes/No, position]
+
+---
+
+## 🔮 Accessibility Guidelines (Inferred from [Primary Style])
+
+> ⚠️ This section is **INFERRED** based on style conventions and WCAG standards.
+
+### Color & Contrast 🔮
+- **Minimum contrast ratio:** [4.5:1 AA / 7:1 AAA]
+- **Large text contrast:** [3:1 minimum]
+- **Non-text contrast:** [3:1 for UI components]
+- **Don't rely on color alone:** [Use icons, patterns, or text labels]
+
+### Focus Management 🔮
+```css
+/* Focus ring style for [Primary Style] */
+:focus-visible {
+  outline: [2px solid var(--color-primary)];
+  outline-offset: [2px];
+  border-radius: [var(--radius-sm)];
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :focus-visible {
+    outline-width: 3px;
+  }
+}
+```
+
+### Motion & Animation 🔮
+```css
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+### Screen Reader Support 🔮
+- **ARIA landmarks:** [header, nav, main, footer, aside]
+- **Live regions:** [For dynamic content updates]
+- **Skip links:** [Skip to main content]
+- **Form labels:** [Associated labels for all inputs]
+- **Image alt text:** [Descriptive for content, empty for decorative]
+
+### Keyboard Navigation 🔮
+- **Tab order:** [Logical, follows visual layout]
+- **Focus trapping:** [In modals and dropdowns]
+- **Escape key:** [Closes modals, dropdowns, menus]
+- **Arrow keys:** [Navigate within components]
+- **Enter/Space:** [Activate buttons and links]
+
+### WCAG Checklist 🔮
+| Criterion | Level | Status | Notes |
+|-----------|-------|--------|-------|
+| 1.1.1 Non-text Content | A | 🔮 | Provide alt text |
+| 1.4.3 Contrast (Minimum) | AA | 🔮 | 4.5:1 ratio |
+| 2.1.1 Keyboard | A | 🔮 | All interactive elements |
+| 2.4.7 Focus Visible | AA | 🔮 | Clear focus indicators |
+| 2.5.5 Target Size | AAA | 🔮 | 44x44px minimum |
+
+---
+
+## 🔮 Page Layout Patterns (Inferred from [Primary Style])
+
+> ⚠️ This section is **INFERRED**. Layout patterns derived from style classification.
+
+### Default Page Structure 🔮
+```
+┌────────────────────────────────────────────────────────┐
+│ Header [fixed/sticky/static]                           │
+├──────────┬─────────────────────────────────────────────┤
+│ Sidebar  │ Main Content                                │
+│ [width]  │ [max-width: Xpx, centered]                  │
+│          │                                             │
+│          │                                             │
+│          │                                             │
+└──────────┴─────────────────────────────────────────────┘
+```
+
+### Layout Specifications 🔮
+- **Content max-width:** [from style table]
+- **Sidebar width:** [collapsed: Xpx, expanded: Xpx]
+- **Header height:** [estimate based on style]
+- **Grid system:** [from style table]
+- **Gutter width:** [16px / 24px / 32px]
+
+---
+
+## Micro-Interactions 📷/🔮
 - Page transitions: [slide/fade/none]
 - Element enter: [fade-up/scale/none]
 - Button press: [scale-down/darken/none]
@@ -770,6 +1252,67 @@ All analysis files preserved at: `{BASE_DIR}/`
 - Screenshots: `{BASE_DIR}/screenshots/`
 - HTML reports: `{BASE_DIR}/html/`
 - Visual reports: `{BASE_DIR}/reports/`
+
+## Specification Confidence Summary
+
+### What Was Extracted (📷🔍)
+| Category | Confidence | Source | Notes |
+|----------|------------|--------|-------|
+| Colors | High | 📷🔍 | Cross-validated from HTML + screenshots |
+| Typography | High | 🔍 | Font families from Google Fonts links |
+| Spacing/radius | Medium | 📷🔍 | From Tailwind classes + visual |
+| Component patterns | High | 📷🔍 | Observed in both sources |
+| Layout structure | High | 📷 | From desktop screenshots |
+| Framework detection | High | 🔍 | From HTML class patterns |
+
+### What Was Inferred (🔮)
+| Category | Based On | Override Recommended |
+|----------|----------|---------------------|
+| Responsive breakpoints | [Primary Style] conventions | If you have specific requirements |
+| Loading states | [Primary Style] patterns | If you have designs for these |
+| Empty states | [Primary Style] patterns | If you have designs for these |
+| Error states | [Primary Style] patterns | If you have designs for these |
+| Mobile patterns | [Primary Style] conventions | If you have mobile designs |
+| Accessibility | WCAG + [Primary Style] | Review against your requirements |
+
+### Recommended Next Steps
+1. **Verify responsive behavior** - Test actual site at different viewports if possible
+2. **Capture additional states** - Request analysis of pages showing loading, empty, or error states
+3. **Mobile analysis** - Request mobile viewport screenshots if mobile is critical
+4. **Review inferred sections** - All 🔮 sections are suggestions based on style conventions
+
+## Limitations of URL-Based Analysis
+
+### What This Analysis CAN Extract
+- Exact colors from CSS/Tailwind classes (🔍)
+- Font families from font links and CSS (🔍)
+- Component patterns from HTML structure (🔍)
+- Visual appearance at captured viewport (📷)
+- Framework and library detection (🔍)
+- Cross-validated styling from both sources (📷🔍)
+
+### What This Analysis CANNOT Extract
+- **Responsive behavior:** Only desktop viewport typically captured
+- **Interactive states:** Hover, focus, active states (unless captured during interaction)
+- **Loading states:** Unless page happened to be loading during capture
+- **Empty/error states:** Unless visible on analyzed pages
+- **Mobile navigation:** Unless mobile viewport specifically requested
+- **Accessibility details:** Focus rings, screen reader behavior, motion preferences
+- **Animation timing:** Static screenshots don't capture motion
+
+### How Inference Fills the Gaps
+When analysis doesn't capture certain behaviors, this specification uses **style-based inference**:
+1. The analyzed pages are classified against known UI styles (e.g., "Linear-Style", "Notion-Style")
+2. Missing behaviors are filled with conventions typical of that style
+3. All inferred content is marked with 🔮 so you know it needs verification
+4. You can override any inferred value with your actual requirements
+
+### Advantages Over Image-Only Analysis
+- **Exact color values** from CSS (not estimated)
+- **Font family names** from font links (not guessed)
+- **Framework detection** for config file generation
+- **Dark mode colors** from CSS variables (if defined)
+- **Cross-validation** increases confidence
 
 ## Notes
 [Any additional context or decisions made during specification]
