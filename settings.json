@@ -1,0 +1,94 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "LS",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(uv sync)",
+      "Bash(curl:*)",
+      "mcp__sequential-thinking__sequentialthinking"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.production)",
+      "Read(./secrets/**)",
+      "Read(./node_modules/**)",
+      "Bash(rm -rf:*)",
+      "Bash(git push:*)",
+      "Write(./.env)",
+      "Write(./.env.local)",
+      "Write(./.env.production)"
+    ],
+    "defaultMode": "default"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/play_sound.sh question_chime.wav"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/play_sound.sh work-complete.mp3"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/play_sound.sh task_complete.wav"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run ~/.claude/hooks/user_prompt_submit.py --log-only --store-last-prompt --name-agent"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run ~/.claude/hooks/pre_compact.py"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "uv run ~/.claude/status_lines/status_line.py",
+    "padding": 0
+  },
+  "enabledPlugins": {},
+  "alwaysThinkingEnabled": true
+}

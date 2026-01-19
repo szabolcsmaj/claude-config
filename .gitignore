@@ -1,0 +1,30 @@
+# Credentials and sensitive data                                                                                                                                                                                 
+.credentials.json                                                                                                                                                                                                
+settings.local.json                                                                                                                                                                                              
+                                                                                                                                                                                                                   
+# Cache and temporary files                                                                                                                                                                                      
+cache/                                                                                                                                                                                                           
+paste-cache/                                                                                                                                                                                                     
+stats-cache.json                                                                                                                                                                                                 
+                                                                                                                                                                                                                   
+# Session and history data                                                                                                                                                                                       
+data/                                                                                                                                                                                                            
+debug/                                                                                                                                                                                                           
+file-history/                                                                                                                                                                                                    
+history.jsonl                                                                                                                                                                                                    
+plans/                                                                                                                                                                                                           
+projects/                                                                                                                                                                                                        
+session-env/                                                                                                                                                                                                     
+shell-snapshots/                                                                                                                                                                                                 
+todos/                                                                                                                                                                                                           
+                                                                                                                                                                                                                   
+# Telemetry and stats                                                                                                                                                                                            
+statsig/                                                                                                                                                                                                         
+telemetry/                                                                                                                                                                                                       
+                                                                                                                                                                                                                   
+# Internal Claude metadata directories                                                                                                                                                                           
+.claude/                                                                                                                                                                                                         
+**/.claude/                                                                                                                                                                                                      
+                                                                                                                                                                                                                   
+# Plugins
+plugins/
