@@ -1,6 +1,6 @@
 # UI Style Specification Generator
 
-You are helping the user create a comprehensive UI style specification from a reference URL or screenshot.
+You are helping the user create a comprehensive UI style specification by analyzing URLs.
 
 ## Input
 
@@ -10,7 +10,7 @@ Reference URL: $ARGUMENTS
 
 ## UI Design Styles Reference Database
 
-Use this reference to classify the analyzed URL. Match against one or more styles, or identify if it's a new style not in this list.
+Use this reference to classify analyzed pages. Match against one or more styles, or identify if it's a new style not in this list.
 
 ### Structural/Layout Styles
 
@@ -76,9 +76,61 @@ Use this reference to classify the analyzed URL. Match against one or more style
 
 ## Your Task
 
-### Step 1: Analyze the Reference
+### Step 0: Classify the Initial URL
 
-If a URL was provided, use WebFetch to analyze the page. Extract as much as possible:
+Before deep analysis, determine what type of page this is:
+
+**Page Type Classification:**
+| Type | Characteristics | What It Reveals |
+|------|-----------------|-----------------|
+| **Marketing/Landing** | Hero sections, CTAs, feature showcases, testimonials | Brand colors, marketing typography, illustration style |
+| **Documentation** | Sidebar nav, code blocks, search, content-heavy | Reading typography, code styling, navigation patterns |
+| **Blog/Content** | Article layout, author info, related posts | Editorial style, image treatment, content typography |
+| **Product/App UI** | Dashboard, forms, tables, authenticated views | Actual component styles, data density, interaction patterns |
+| **Pricing/Comparison** | Tables, feature lists, plan cards | Card styles, table design, CTA treatment |
+| **Login/Auth** | Forms, social buttons, minimal layout | Form styling, button variants, error states |
+| **Changelog/Updates** | Timeline, version numbers, categorized entries | List styles, badge/tag design, date formatting |
+
+**IMPORTANT:** Marketing pages and product UIs often have DIFFERENT design systems. Ask the user which they want to emulate.
+
+### Step 1: Smart Page Discovery
+
+After analyzing the initial URL:
+
+1. **Extract the base domain** from the provided URL
+2. **Probe for common subpages** (use WebFetch, handle 404s gracefully):
+   - `/docs` or `/documentation` - documentation style
+   - `/pricing` - pricing cards, comparison tables
+   - `/blog` - content/editorial style
+   - `/features` - feature presentation style
+   - `/about` - team/company page style
+   - `/login` or `/signin` - form styling
+   - `/changelog` or `/releases` - list/timeline style
+   - `/contact` - form styling
+
+3. **Report what you found:**
+```markdown
+## Discovered Pages
+
+| Page | URL | Status | Page Type |
+|------|-----|--------|-----------|
+| Main | [url] | ✓ Analyzed | Marketing |
+| Docs | [url]/docs | ✓ Found | Documentation |
+| Pricing | [url]/pricing | ✓ Found | Pricing |
+| Blog | [url]/blog | ✗ Not found | - |
+| Login | [url]/login | ✓ Found | Auth |
+```
+
+4. **Ask the user:**
+   - "I found these accessible pages. Which should I analyze for style extraction? (I recommend analyzing 3-5 diverse page types for a complete picture)"
+   - "Is there a specific page type you care most about? (e.g., 'I want my app to look like their dashboard, not their marketing site')"
+   - "Do you have URLs to additional pages I should analyze? (e.g., a public demo, a specific feature page)"
+
+**Limit: Analyze maximum 8 pages total to keep focused.**
+
+### Step 2: Multi-Page Analysis
+
+For each selected page, use WebFetch to extract:
 
 **Automatically Detectable:**
 - [ ] Color palette (primary, secondary, accent, background, text colors - exact hex values)
@@ -90,72 +142,106 @@ If a URL was provided, use WebFetch to analyze the page. Extract as much as poss
 - [ ] Spacing patterns
 - [ ] Layout system (grid type, container widths)
 
-**Visually Identified:**
-- [ ] Dark/Light mode preference
-- [ ] Information density (compact/spacious)
-- [ ] Visual hierarchy approach
-- [ ] Icon style (outlined, filled, duotone, custom illustrations)
-- [ ] Image treatment (rounded, sharp, overlapping, contained)
-- [ ] Animation/transition style
+**Page-Type Specific Extraction:**
+- **Docs pages:** Sidebar width, code block styling, heading hierarchy, search UI
+- **Pricing pages:** Card layout, feature list styling, CTA button variants
+- **Blog pages:** Article width, image sizing, author components, related posts
+- **Login pages:** Form field styling, button styling, social auth buttons, error states
+- **Dashboard pages:** Widget/card density, table styling, navigation patterns
 
-### Step 2: Match Against Style Reference Database
+### Step 3: Cross-Page Consistency Analysis
 
-**CRITICAL STEP:** Compare your findings against the UI Design Styles Reference Database above.
+After analyzing multiple pages, identify:
+
+```markdown
+## Design System Consistency Report
+
+### Consistent Across All Pages:
+- Colors: [which colors are universal]
+- Typography: [which fonts appear everywhere]
+- Components: [which components look the same]
+
+### Variations by Page Type:
+| Element | Marketing | Docs | App/Dashboard |
+|---------|-----------|------|---------------|
+| Primary font | [x] | [y] | [z] |
+| Spacing density | Spacious | Moderate | Compact |
+| Border radius | 16px | 8px | 4px |
+
+### Notable Inconsistencies:
+- [List any style conflicts between pages]
+
+### Recommendation:
+"The [page type] pages best represent the style you likely want for your app because [reason]."
+```
+
+### Step 4: Match Against Style Reference Database
+
+**CRITICAL STEP:** Compare findings against the UI Design Styles Reference Database above.
 
 Determine:
-1. **Primary Style Match:** Which style from the database best describes this URL? (Pick 1)
-2. **Secondary Style Influences:** What other styles from the database are present? (Pick 0-3)
+1. **Primary Style Match:** Which style from the database best describes this site? (Pick 1)
+2. **Secondary Style Influences:** What other styles are present? (Pick 0-3)
 3. **Confidence Level:** How well does it match? (Strong match / Partial match / Weak match)
+4. **Style Varies by Page Type?** Note if marketing vs. product have different styles.
 
 **If NO style matches well:**
 - Describe the unique characteristics that don't fit existing categories
 - Propose a NEW style name and definition
-- Ask the user: "This appears to be a style not in my reference database. I'd call it **[Proposed Name]** characterized by [characteristics]. Should I add this to the style reference for future use?"
+- Ask: "This appears to be a style not in my reference database. I'd call it **[Proposed Name]** characterized by [characteristics]. Should I add this to the style reference for future use?"
 
-Present the style matching like this:
+Present the style matching:
 
 ```markdown
 ## Style Classification
 
 ### Primary Style: [Style Name]
 **Confidence:** [Strong/Partial/Weak]
+**Best represented on:** [which page type]
 **Matching characteristics:**
 - [bullet points of what matches]
 
 ### Secondary Influences:
-- **[Style Name]:** [which elements match]
-- **[Style Name]:** [which elements match]
+- **[Style Name]:** [which elements match, on which pages]
+- **[Style Name]:** [which elements match, on which pages]
+
+### Style by Page Type:
+| Page Type | Primary Style | Notes |
+|-----------|---------------|-------|
+| Marketing | [style] | [notes] |
+| Docs | [style] | [notes] |
+| App | [style] | [notes] |
 
 ### Deviations from Standard:
 - [What differs from the matched style's typical implementation]
 ```
 
-### Step 3: Present Full Findings
+### Step 5: Present Consolidated Findings
 
-Show the user what you found:
+Merge findings from all analyzed pages:
 
 ```markdown
 ## Extracted Style Specification
 
-### Style Classification
-[From Step 2]
+### Pages Analyzed
+1. [URL] - [Page Type] - [Primary style found]
+2. [URL] - [Page Type] - [Primary style found]
+...
 
-### Colors
-| Role | Hex | Usage |
-|------|-----|-------|
-| Primary | #xxx | |
-| Secondary | #xxx | |
-| Accent | #xxx | |
-| Background | #xxx | |
-| Surface | #xxx | |
-| Text | #xxx | |
-| Text Muted | #xxx | |
-| Border | #xxx | |
+### Style Classification
+[From Step 4]
+
+### Colors (Consolidated)
+| Role | Hex | Found On | Usage |
+|------|-----|----------|-------|
+| Primary | #xxx | All pages | Buttons, links |
+| Secondary | #xxx | Marketing only | CTAs |
+| ... | | | |
 
 ### Typography
 - Headings: [Font Family], weights used: [...]
 - Body: [Font Family], base size: [...]
-- Mono/Code: [Font Family]
+- Mono/Code: [Font Family] (found on: docs, blog)
 
 ### Framework/Libraries Detected
 - CSS: [Tailwind / Bootstrap / UnoCSS / Custom]
@@ -163,46 +249,52 @@ Show the user what you found:
 - Icons: [Detected or "Unknown"]
 
 ### Measurements
-- Border radius: [values observed]
+- Border radius: [values by page type]
 - Base spacing unit: [estimated]
 - Container max-width: [value]
 - Shadows: [description]
 
-### Layout Pattern
-- [Description of layout approach]
+### Layout Patterns by Page Type
+- Marketing: [description]
+- Docs: [description]
+- App: [description]
 ```
 
-### Step 4: Interactive Clarification
+### Step 6: Interactive Clarification
 
-After presenting findings, ASK the user about:
+After presenting findings, ASK the user:
 
-1. **Style Confirmation:**
-   - "I classified this as **[Style]** with **[Secondary]** influences. Does that match your intent, or are you aiming for something different?"
+1. **Page Type Preference:**
+   - "Your marketing site and product pages have different styles. Which do you want to base your spec on?"
+   - "Should I create separate specs for marketing vs. app pages?"
+
+2. **Style Confirmation:**
+   - "I classified this as **[Style]** with **[Secondary]** influences. Does that match your intent?"
    - If new style proposed: "Should I add **[Proposed Style]** to the reference database?"
 
-2. **Missing Information:**
+3. **Missing Information:**
    - "I couldn't detect the icon library. Do you want: Lucide, Heroicons, Phosphor, Tabler, or custom SVGs?"
    - "The component library isn't clear. For Nuxt, would you prefer: Nuxt UI, shadcn-vue, Radix Vue, PrimeVue, or Headless UI?"
 
-3. **Contradictions or Choices:**
-   - "The site uses both sharp and rounded corners. Which do you prefer?"
+4. **Contradictions or Choices:**
+   - "The site uses both sharp (docs) and rounded (marketing) corners. Which do you prefer?"
    - "I see both card-based and list layouts. What's your primary content display preference?"
 
-4. **Deeper Style Questions:**
+5. **Deeper Style Questions:**
    - "How should loading states appear? (Skeletons / Spinners / Shimmer / None)"
    - "What's your button interaction style? (Scale / Color shift / Shadow lift / Ripple)"
    - "Empty states: Illustrated / Minimal text / Call-to-action focused?"
    - "Form style: Floating labels / Stacked / Inline / Bordered inputs?"
    - "Navigation pattern: Sidebar / Top bar / Command palette / Breadcrumbs?"
 
-5. **Additional References:**
-   - "Do you have additional URLs or screenshots to reference?"
-   - "Any specific pages/apps whose [tables/forms/dashboards/etc.] you'd like to emulate?"
+6. **Additional URLs:**
+   - "Do you have additional URLs to reference for specific components? (e.g., a page with good table design, a settings page)"
+   - "Any other products whose [tables/forms/dashboards/etc.] you'd like to emulate?"
 
-6. **Anti-Patterns:**
+7. **Anti-Patterns:**
    - "What should this NOT look like? Any styles from the reference to explicitly avoid?"
 
-### Step 5: Generate Final Specification
+### Step 7: Generate Final Specification
 
 After gathering all input, produce a complete specification file:
 
@@ -212,11 +304,17 @@ After gathering all input, produce a complete specification file:
 ## Design Direction
 - **Primary Style:** [Style from database]
 - **Secondary Influences:** [Other styles]
-- **Inspiration:** [URLs/products referenced]
+- **Inspiration:** [URLs analyzed]
 - **Mood:** [2-3 descriptive words]
 
 ## Style Reference
 > [Brief description of the primary style from the database, so future readers understand the intent]
+
+## Source Analysis
+| URL | Page Type | Key Extractions |
+|-----|-----------|-----------------|
+| [url] | [type] | [what was extracted] |
+| ... | | |
 
 ## Color System
 | Token | Light Mode | Dark Mode | Usage |
@@ -369,14 +467,16 @@ Based on **[Primary Style]**, avoid:
 - [User-specified anti-patterns]
 
 ## Reference URLs
-- Primary: [main reference URL]
-- Additional: [other URLs provided]
+| URL | What to reference |
+|-----|-------------------|
+| [url] | [specific elements] |
+| ... | |
 
 ## Notes
 [Any additional context or decisions made during specification]
 ```
 
-### Step 6: Handle New Style Additions
+### Step 8: Handle New Style Additions
 
 If the user confirms a new style should be added, tell them:
 
@@ -388,7 +488,7 @@ If the user confirms a new style should be added, tell them:
 
 I recommend adding it to the **[suggested category]** section."
 
-### Step 7: Offer Next Steps
+### Step 9: Offer Next Steps
 
 Ask the user:
 - "Should I save this specification to a file in your project? (e.g., `docs/ui-style-spec.md` or `UI_STYLE.md`)"
