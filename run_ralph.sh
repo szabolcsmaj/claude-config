@@ -297,7 +297,7 @@ run_claude_loop() {
 
         # Check for API limit - sleep and retry if hit
         if detect_api_limit_error "$response"; then
-            log_warning "Claude API usage limit reached. Sleeping for 5 minutes..."
+            log_warning "Claude API usage limit reached. Sleeping for 10 minutes..."
             sleep $API_LIMIT_SLEEP_SECONDS
             log_info "Resuming after sleep..."
             continue
