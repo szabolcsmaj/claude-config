@@ -286,7 +286,7 @@ run_claude_loop() {
     echo ""
 
     while true; do
-        ((loop_count++))
+        ((++loop_count))
         log_info "=== Loop $loop_count ==="
 
         # Run Claude and capture response
@@ -329,8 +329,8 @@ run_claude_loop() {
 
         # Track test-focused loops
         if is_test_focused_loop "$response"; then
-            ((consecutive_test_loops++))
-            ((total_test_loops++))
+            ((++consecutive_test_loops))
+            ((++total_test_loops))
             log_info "Test-focused loop detected (consecutive: $consecutive_test_loops)"
         else
             consecutive_test_loops=0
@@ -338,7 +338,7 @@ run_claude_loop() {
 
         # Track consecutive done signals
         if [[ "$exit_signal" == "true" ]]; then
-            ((consecutive_done_signals++))
+            ((++consecutive_done_signals))
             log_info "Done signal received (consecutive: $consecutive_done_signals)"
         else
             consecutive_done_signals=0

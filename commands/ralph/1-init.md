@@ -158,7 +158,7 @@ project_goal=$1
 # Rules to follow
 
 1. Study `specs/*` with up to 250 parallel Sonnet subagents to learn the application specifications.
-2. Study IMPLEMENTATION_PLAN.md (if present; it may be incorrect) and use up to 500 Sonnet subagents to study existing source code in `src/*` and compare it against `specs/*`. Use an Opus subagent to analyze findings, prioritize tasks, and create/update IMPLEMENTATION_PLAN.md as a bullet point list sorted in priority of items yet to be implemented. Ultrathink. Consider searching for TODO, minimal implementations, placeholders, skipped/flaky tests, and inconsistent patterns. Study IMPLEMENTATION_PLAN.md to determine starting point for research and keep it up to date with items considered complete/incomplete using subagents.
+2. Study IMPLEMENTATION_PLAN.md (if present; it may be incorrect) and use up to 500 Sonnet subagents to study existing source code in `src/*` and compare it against `specs/*`. Use an Opus subagent to analyze findings, prioritize tasks, and create/update IMPLEMENTATION_PLAN.md as a bullet point list sorted in priority of items yet to be implemented. If an item has a sub-item, also make that as a checkbox so that it can be checked during implementation. Ultrathink. Consider searching for TODO, minimal implementations, placeholders, skipped/flaky tests, and inconsistent patterns. Study IMPLEMENTATION_PLAN.md to determine starting point for research and keep it up to date with items considered complete/incomplete using subagents.
 3. IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is missing; confirm with code search first. Prefer consolidated, idiomatic implementations there over ad-hoc copies. DO NOT ask for user feedback.
 4. ULTIMATE GOAL: We want to create a <project_goal>. Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in IMPLEMENTATION_PLAN.md using a subagent.
 5. Make a commit after every change. Don't push.
@@ -222,9 +222,9 @@ This block is REQUIRED for every response. The automation system depends on it.
 0b. Study IMPLEMENTATION_PLAN.md.
 0c. For reference, the application source code is in `src/*`.
 
-1. Your task is to implement functionality per the specifications using parallel subagents. Follow IMPLEMENTATION_PLAN.md and choose the most important item to address. Before making changes, search the codebase (don't assume not implemented) using Sonnet subagents. You may use up to 500 parallel Sonnet subagents for searches/reads and only 1 Sonnet subagent for build/tests. Use Opus subagents when complex reasoning is needed (debugging, architectural decisions).
-2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved. If functionality is missing then it's your job to add it as per the application specifications. Ultrathink.
-3. When you discover issues, immediately update IMPLEMENTATION_PLAN.md with your findings using a subagent. When resolved, update and remove the item.
+1. Your task is to implement functionality per the specifications using parallel sonnet subagents. Follow IMPLEMENTATION_PLAN.md and choose the most important item to address. Before making changes, search the codebase (don't assume not implemented) using Sonnet subagents. You may use up to 500 parallel Sonnet subagents for searches/reads and only 1 Sonnet subagent for build/tests. Use Opus subagents when complex reasoning is needed (debugging, architectural decisions).
+2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved with sonnet subagents. If functionality is missing then it's your job to add it as per the application specifications. 
+3. When you discover issues, immediately update IMPLEMENTATION_PLAN.md with your findings using a sonnet subagent. When resolved, update and remove the item.
 4. When the tests pass, update IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes.
 5. Output the parts in <output_requirements>
 
