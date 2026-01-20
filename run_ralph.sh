@@ -9,10 +9,10 @@
 set -euo pipefail
 
 # === Configuration ===
-readonly MAX_CONSECUTIVE_DONE_SIGNALS=3
-readonly MAX_CONSECUTIVE_TEST_LOOPS=3
+readonly MAX_CONSECUTIVE_DONE_SIGNALS=2
+readonly MAX_CONSECUTIVE_TEST_LOOPS=2
 readonly TEST_PERCENTAGE_THRESHOLD=30
-readonly API_LIMIT_SLEEP_SECONDS=300  # 5 minutes
+readonly API_LIMIT_SLEEP_SECONDS=600  # 10 minutes
 
 # === State Variables ===
 declare -i loop_count=0
