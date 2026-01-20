@@ -138,7 +138,11 @@ project_goal=$1
 # Implementation details
 <!-- Ralph Wiggum Loop related stuff that would not go into any other parts (or into a PRD for that matter) -->
 <!-- 
-    Use .env to have access to API KEYS and other information for testing during implementation. .env otherwise is not readable by claude itself
+- Use .env to have access to API KEYS and other information for testing during implementation. .env otherwise is not readable by claude itself
+- E2E test cases to verify that the application works as intended. This is key, to avoid reporting the application is working, while it's really not
+- Mock data for E2E tests
+- Init script that initializes the whole dev environment: 
+- "Random" frontend E2E test: Create a user with backend, bring up agent-browser, attach a subagent on each docker container logs that filters ERROR and WARNING logs and just visit a few screens, create a few records. Also check the browser's console for errors and warnings. Do this in a loop until there are no blocking errors or warnings
 -->
 
 ```
@@ -158,6 +162,51 @@ project_goal=$1
 3. IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is missing; confirm with code search first. Prefer consolidated, idiomatic implementations there over ad-hoc copies. DO NOT ask for user feedback.
 4. ULTIMATE GOAL: We want to create a <project_goal>. Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in IMPLEMENTATION_PLAN.md using a subagent.
 5. Make a commit after every change. Don't push.
+6. Output the parts in <output_requirements>
+
+<output_requirements>
+   
+At the END of every response, you MUST output a RALPH_STATUS block in this exact format:
+
+\`\`\`
+RALPH_STATUS:
+  completion_indicators: <number>
+  EXIT_SIGNAL: <true|false>
+\`\`\`
+                  
+Where:  
+- `completion_indicators`: Count how many of these apply to your current state:
+  - A major phase/feature is complete
+  - All requested tasks are done
+  - The project is ready for review/deployment
+  - No more pending work items
+  - Tests are passing and implementation is stable
+
+- `EXIT_SIGNAL`: Set to `true` ONLY when ALL of these are true:
+  - All tasks from the plan are complete
+  - No known bugs or issues remain
+  - The project meets all requirements
+  - You have nothing more to implement or fix
+  Otherwise, set to `false`
+
+**Examples**
+
+If you just finished one feature but have more to do:
+```
+RALPH_STATUS:
+  completion_indicators: 1
+  EXIT_SIGNAL: false
+```
+
+If all work is done and project is ready:
+```
+RALPH_STATUS:
+  completion_indicators: 4
+  EXIT_SIGNAL: true
+```
+
+This block is REQUIRED for every response. The automation system depends on it.
+</output_requirements>
 ```
 
 
@@ -177,6 +226,51 @@ project_goal=$1
 2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved. If functionality is missing then it's your job to add it as per the application specifications. Ultrathink.
 3. When you discover issues, immediately update IMPLEMENTATION_PLAN.md with your findings using a subagent. When resolved, update and remove the item.
 4. When the tests pass, update IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes.
+5. Output the parts in <output_requirements>
+
+<output_requirements>
+   
+At the END of every response, you MUST output a RALPH_STATUS block in this exact format:
+
+\`\`\`
+RALPH_STATUS:
+  completion_indicators: <number>
+  EXIT_SIGNAL: <true|false>
+\`\`\`
+                  
+Where:  
+- `completion_indicators`: Count how many of these apply to your current state:
+  - A major phase/feature is complete
+  - All requested tasks are done
+  - The project is ready for review/deployment
+  - No more pending work items
+  - Tests are passing and implementation is stable
+
+- `EXIT_SIGNAL`: Set to `true` ONLY when ALL of these are true:
+  - All tasks from the plan are complete
+  - No known bugs or issues remain
+  - The project meets all requirements
+  - You have nothing more to implement or fix
+  Otherwise, set to `false`
+
+**Examples**
+
+If you just finished one feature but have more to do:
+```
+RALPH_STATUS:
+  completion_indicators: 1
+  EXIT_SIGNAL: false
+```
+
+If all work is done and project is ready:
+```
+RALPH_STATUS:
+  completion_indicators: 4
+  EXIT_SIGNAL: true
+```
+
+This block is REQUIRED for every response. The automation system depends on it.
+</output_requirements>
 
 99999. Important: When authoring documentation, capture the why – tests and implementation importance.
 999999. Important: Single sources of truth, no migrations/adapters. If tests unrelated to your work fail, resolve them as part of the increment.
