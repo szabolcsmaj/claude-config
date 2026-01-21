@@ -291,9 +291,11 @@ count_unchecked_tasks() {
     # Count lines with "- [ ]" (unchecked) but exclude special markers [O], [M], [U], [D]
     # Pattern: "- [ ]" matches standard unchecked checkbox
     local count
-    count=$(grep -cE '^\s*-\s*\[ \]' "$plan_file" 2>/dev/null || echo "0")
+    # Note: grep -c outputs "0" with exit code 1 when no matches found,
+    # so we capture it directly and default to 0 only if output is empty
+    count=$(grep -cE '^\s*-\s*\[ \]' "$plan_file" 2>/dev/null)
 
-    echo "$count"
+    echo "${count:-0}"
 }
 
 # === Main Loop Logic ===
