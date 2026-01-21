@@ -9,8 +9,8 @@
 set -euo pipefail
 
 # === Configuration ===
-readonly MAX_CONSECUTIVE_DONE_SIGNALS=2
-readonly MAX_CONSECUTIVE_TEST_LOOPS=2
+readonly MAX_CONSECUTIVE_DONE_SIGNALS=3
+readonly MAX_CONSECUTIVE_TEST_LOOPS=3
 readonly TEST_PERCENTAGE_THRESHOLD=30
 readonly API_LIMIT_SLEEP_SECONDS=600  # 10 minutes
 
@@ -19,6 +19,7 @@ declare -i loop_count=0
 declare -i consecutive_done_signals=0
 declare -i consecutive_test_loops=0
 declare -i total_test_loops=0
+declare -i unchecked_count=0
 
 # === Color Output ===
 readonly RED='\033[0;31m'
@@ -272,6 +273,29 @@ detect_error_response() {
     return 1
 }
 
+# === Implementation Plan Tracking ===
+
+# Count unchecked tasks in IMPLEMENTATION_PLAN.md
+# Counts lines matching "- [ ]" (standard unchecked checkbox)
+# Does NOT count special markers: [O], [M], [U], [D]
+# Returns: count of unchecked tasks
+count_unchecked_tasks() {
+    local plan_file="IMPLEMENTATION_PLAN.md"
+
+    if [[ ! -f "$plan_file" ]]; then
+        log_warning "IMPLEMENTATION_PLAN.md not found"
+        echo "0"
+        return
+    fi
+
+    # Count lines with "- [ ]" (unchecked) but exclude special markers [O], [M], [U], [D]
+    # Pattern: "- [ ]" matches standard unchecked checkbox
+    local count
+    count=$(grep -cE '^\s*-\s*\[ \]' "$plan_file" 2>/dev/null || echo "0")
+
+    echo "$count"
+}
+
 # === Main Loop Logic ===
 
 run_claude_loop() {
@@ -325,7 +349,10 @@ run_claude_loop() {
         # Total indicators (RALPH_STATUS + heuristic)
         local -i total_indicators=$((ralph_completion_indicators + heuristic_indicators))
 
-        log_info "Status: completion_indicators=$total_indicators (ralph=$ralph_completion_indicators, heuristic=$heuristic_indicators), EXIT_SIGNAL=$exit_signal"
+        # Count unchecked tasks in IMPLEMENTATION_PLAN.md
+        unchecked_count=$(count_unchecked_tasks)
+
+        log_info "Status: completion_indicators=$total_indicators (ralph=$ralph_completion_indicators, heuristic=$heuristic_indicators), EXIT_SIGNAL=$exit_signal, unchecked_count=$unchecked_count"
 
         # Track test-focused loops
         if is_test_focused_loop "$response"; then
@@ -345,23 +372,33 @@ run_claude_loop() {
         fi
 
         # === Exit Condition Checks ===
+        # All exit conditions now require unchecked_count == 0
 
         # 1. Dual-condition gate (primary exit condition)
-        if [[ $total_indicators -ge 2 && "$exit_signal" == "true" ]]; then
-            log_success "EXIT: project_complete (dual-condition met: indicators=$total_indicators >= 2, EXIT_SIGNAL=true)"
+        if [[ $total_indicators -ge 2 && "$exit_signal" == "true" && $unchecked_count -eq 0 ]]; then
+            log_success "EXIT: project_complete (dual-condition met: indicators=$total_indicators >= 2, EXIT_SIGNAL=true, unchecked_count=0)"
             return 0
         fi
 
         # 2. Multiple consecutive done signals
-        if [[ $consecutive_done_signals -ge $MAX_CONSECUTIVE_DONE_SIGNALS ]]; then
-            log_success "EXIT: $MAX_CONSECUTIVE_DONE_SIGNALS consecutive done signals received"
+        if [[ $consecutive_done_signals -ge $MAX_CONSECUTIVE_DONE_SIGNALS && $unchecked_count -eq 0 ]]; then
+            log_success "EXIT: $MAX_CONSECUTIVE_DONE_SIGNALS consecutive done signals received (unchecked_count=0)"
             return 0
         fi
 
         # 3. Too many consecutive test-focused loops
-        if [[ $consecutive_test_loops -ge $MAX_CONSECUTIVE_TEST_LOOPS ]]; then
-            log_success "EXIT: $MAX_CONSECUTIVE_TEST_LOOPS consecutive test loops (feature likely complete)"
+        if [[ $consecutive_test_loops -ge $MAX_CONSECUTIVE_TEST_LOOPS && $unchecked_count -eq 0 ]]; then
+            log_success "EXIT: $MAX_CONSECUTIVE_TEST_LOOPS consecutive test loops (unchecked_count=0)"
             return 0
+        fi
+
+        # Log why we didn't exit if conditions were close
+        if [[ $unchecked_count -gt 0 ]]; then
+            if [[ $total_indicators -ge 2 && "$exit_signal" == "true" ]] || \
+               [[ $consecutive_done_signals -ge $MAX_CONSECUTIVE_DONE_SIGNALS ]] || \
+               [[ $consecutive_test_loops -ge $MAX_CONSECUTIVE_TEST_LOOPS ]]; then
+                log_warning "Exit conditions met but $unchecked_count unchecked task(s) remain in IMPLEMENTATION_PLAN.md"
+            fi
         fi
 
         # 4. Test percentage threshold warning
