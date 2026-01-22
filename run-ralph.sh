@@ -299,8 +299,14 @@ count_unchecked_tasks() {
     # Note: grep -c outputs "0" with exit code 1 when no matches found,
     # so we capture it directly and default to 0 only if output is empty
     count=$(grep -cE '^\s*-\s*\[ \]' "$plan_file" 2>/dev/null)
+    count=${count:-0}
 
-    echo "${count:-0}"
+    # Subtract 1 to exclude the legend explanation at the top of the file
+    if [[ $count -gt 0 ]]; then
+        count=$((count - 1))
+    fi
+
+    echo "$count"
 }
 
 # === Main Loop Logic ===

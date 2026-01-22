@@ -255,7 +255,6 @@ This block is REQUIRED for every response. The automation system depends on it.
    - [O] - Optional (nice-to-have, not blocking)
    - [M] - Manual testing required (cannot be automated)
    - [U] - Unable to complete (blocked by external factors)
-   - [D] - Deferred (postponed for later)
    Example: `- [M] Manual testing on Chrome, Firefox, Safari`
 4. When the tests pass, update IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes.
 5. Output the parts in <output_requirements>
@@ -343,7 +342,25 @@ docker compose down
 ```
 ```
 
-### 5. Inform the user
+### 5. Create IMPLEMENTATION_PLAN.md
+
+# Implementation Plan for <project_name>
+
+This document outlines all implementation items needed to build the <project_name> application from scratch. Items are grouped by priority and include dependencies and related specification files.
+
+**Last Updated:** ????-??-?? (Never)
+
+**Status Legend:**
+- [ ] Not started
+- [x] Completed
+- [O] Optional
+- [M] Manual testing needed
+- [U] Unable to implement
+
+---
+
+
+### 6. Inform the user
 
 Inform the user that:
 1. He should open the prd.md file and fill it out with the necessary information.
