@@ -135,14 +135,41 @@ project_goal=$1
 <!-- Prevents scope creep, clarifies boundaries -->
 <!-- Out of Scope is underrated - explicitly stating what you're NOT building helps AI generate focused specs -->
 
-# Implementation details
+# Development details
 <!-- Ralph Wiggum Loop related stuff that would not go into any other parts (or into a PRD for that matter) -->
 <!-- 
 - Use .env to have access to API KEYS and other information for testing during implementation. .env otherwise is not readable by claude itself
 - E2E test cases to verify that the application works as intended. This is key, to avoid reporting the application is working, while it's really not
-- Mock data for E2E tests
-- Init script that initializes the whole dev environment: 
-- "Random" frontend E2E test: Create a user with backend, bring up agent-browser, attach a subagent on each docker container logs that filters ERROR and WARNING logs and just visit a few screens, create a few records. Also check the browser's console for errors and warnings. Do this in a loop until there are no blocking errors or warnings
+- Determine the used technologies and check for rules that apply to that technologi in the `~/.claude/rules` directory. If there are rules, copy that directory with `mkdir -p .claude/rules && cp -r ~/.claude/rules/<rule_directory> .claude/rules`
+- Create scripts in `scripts` directory that helps developers do their work. Good starter scripts:
+    - `init`: Completely initializes the whole developer environment (checks .env's existence, docker setup, migraton script, other scaffolding, etc..)
+    - `migrate`: Runs a migration script on the database (if it makes sense)
+    - `backup`: Creates a local backup of the database and assets
+    - `restore`: Restores a backup script
+    - `run-tests <params>`: Runs tests. Params can be to filter for test types (all, unit, e2e, etc) and actual files or modules
+    - `add-mock-data`: Creates mock data so that the application has some data to test with. These should be master data, not transactional records
+- Create a task to do a "Big Sanity Test" (BST). If the application has a web based frontend, run a sanity test before finishing the implementation, so this should be done at the very end of the implementation. Do it the following way:
+    - Create mock data with `add-mock-data` script, so that the application has a user to login with
+    - Start all docker containers with `docker compose up -d`
+    - Spawn a subagent that starts an agent-browser, passing the user credentials to it. The agent goes through the following workflow:
+        1. Gets to the login page, checks:
+            - Translations are visible
+            - Console log for errors or warnings
+        2. Logs in, checks:
+            - Translations are visible
+            - Console log for errors or warnings
+            - Actually logged in (not on login page, rather on the designated page)
+        3. After logging in, refreshes the browser ("presses" F5). Check:
+            - If the login page is not loaded again
+        4. Navigates to another menu. Check:
+            - If the navigation works
+            - Console log for errors or warnings
+    - During this process, if any of the checks fail, do the following:
+        1. Investigate the error:
+            - Read the browser's console.log for errors
+            - Spawn sonnet subagents for each docker container, and read in all the docker logs and grep for errors
+            - Collect all the errors and warnings, then figure out the error
+        2. Try to fix the error(s)
 -->
 
 ```
