@@ -8,6 +8,11 @@
 
 set -euo pipefail
 
+# NOTE: All file operations use the CURRENT WORKING DIRECTORY (where you run
+# the command from), not the directory where this script resides. This means:
+# - IMPLEMENTATION_PLAN.md is looked up in your project directory
+# - The prompt_file argument is resolved relative to your project directory
+
 # === Configuration ===
 readonly MAX_CONSECUTIVE_DONE_SIGNALS=3
 readonly MAX_CONSECUTIVE_TEST_LOOPS=3
