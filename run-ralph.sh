@@ -235,26 +235,44 @@ is_test_focused_loop() {
 # Detect API rate limit error in response
 # Parameters: response (string) - Claude's response
 # Returns: 0 (true) if rate limited, 1 (false) otherwise
+#
+# IMPORTANT: This function only checks for ACTUAL API errors in JSON structure,
+# not conversational mentions of "rate limit" in Claude's text output.
+# Previous versions caused false positives when Claude discussed rate limiting.
 detect_api_limit_error() {
     local response="$1"
 
-    # Common rate limit error patterns
-    local -a limit_patterns=(
-        "rate limit"
-        "rate_limit"
-        "too many requests"
-        "quota exceeded"
-        "usage limit"
-        "api limit"
-        "429"
-        "resource_exhausted"
-    )
+    # Check for Anthropic API error structure with rate limit type
+    # Format: {"type":"error","error":{"type":"rate_limit_error",...}}
+    if echo "$response" | grep -qP '"type"\s*:\s*"error".*"type"\s*:\s*"rate_limit_error"'; then
+        return 0
+    fi
 
-    for pattern in "${limit_patterns[@]}"; do
-        if echo "$response" | grep -qi "$pattern"; then
-            return 0
-        fi
-    done
+    # Check for error with rate limit message in error object
+    if echo "$response" | grep -qP '"type"\s*:\s*"error".*"message"\s*:\s*"[^"]*rate[_ ]?limit'; then
+        return 0
+    fi
+
+    # Check for HTTP 429 status in error context (not in text content)
+    if echo "$response" | grep -qP '"type"\s*:\s*"error".*"status"\s*:\s*429'; then
+        return 0
+    fi
+
+    # Check for overloaded_error (Anthropic's overload response)
+    if echo "$response" | grep -qP '"type"\s*:\s*"error".*"type"\s*:\s*"overloaded_error"'; then
+        return 0
+    fi
+
+    # Check for resource_exhausted in error context
+    if echo "$response" | grep -qP '"type"\s*:\s*"error".*"resource_exhausted"'; then
+        return 0
+    fi
+
+    # Check for Claude CLI specific rate limit output (not in assistant text)
+    # The CLI outputs specific error lines, not embedded in content blocks
+    if echo "$response" | grep -qP '^Error:.*rate[_ ]?limit' 2>/dev/null; then
+        return 0
+    fi
 
     return 1
 }
