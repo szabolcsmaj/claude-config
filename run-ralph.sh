@@ -19,6 +19,42 @@ readonly MAX_CONSECUTIVE_TEST_LOOPS=3
 readonly TEST_PERCENTAGE_THRESHOLD=30
 readonly API_LIMIT_SLEEP_SECONDS=600  # 10 minutes
 
+# === Kimi K2 Configuration ===
+set_kimi_k2_env() {
+    export ANTHROPIC_BASE_URL="https://api.moonshot.ai/anthropic"
+    export ANTHROPIC_MODEL="kimi-k2-thinking-turbo"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="kimi-k2-thinking-turbo"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="kimi-k2-thinking-turbo"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="kimi-k2-thinking-turbo"
+    export CLAUDE_CODE_SUBAGENT_MODEL="kimi-k2-thinking-turbo"
+
+    # Handle ANTHROPIC_AUTH_TOKEN
+    if [[ -z "${ANTHROPIC_AUTH_TOKEN:-}" ]]; then
+        # Try to get token from fish universal variables if fish is available
+        if command -v fish &> /dev/null; then
+            local fish_token
+            fish_token=$(fish -c 'echo $anthropic_auth_token' 2>/dev/null || echo "")
+            if [[ -n "$fish_token" && "$fish_token" != "$" ]]; then
+                export ANTHROPIC_AUTH_TOKEN="$fish_token"
+                log_info "Retrieved token from fish universal variables"
+            fi
+        fi
+
+        # If still no token, prompt the user
+        if [[ -z "${ANTHROPIC_AUTH_TOKEN:-}" ]]; then
+            echo "Enter your ANTHROPIC_AUTH_TOKEN for Kimi K2:"
+            read -s -r token
+            export ANTHROPIC_AUTH_TOKEN="$token"
+            echo "Token set for this session."
+            echo "To store it permanently, add to your ~/.bashrc or ~/.zshrc:"
+            echo "export ANTHROPIC_AUTH_TOKEN='your_token_here'"
+            echo ""
+        fi
+    fi
+
+    log_info "Using Kimi K2 model configuration"
+}
+
 # === State Variables ===
 declare -i loop_count=0
 declare -i consecutive_done_signals=0
@@ -455,12 +491,45 @@ run_claude_loop() {
 # === Main Entry Point ===
 
 main() {
-    if [[ $# -lt 1 ]]; then
-        log_error "Usage: run_ralph.sh <prompt_file>"
+    local use_kimi_k2=false
+    local prompt_file=""
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --k2)
+                use_kimi_k2=true
+                shift
+                ;;
+            --help|-h)
+                echo "Usage: run_ralph.sh [--k2] <prompt_file>"
+                echo ""
+                echo "Options:"
+                echo "  --k2    Use Kimi K2 model configuration"
+                echo "  --help  Show this help message"
+                exit 0
+                ;;
+            *)
+                if [[ -z "$prompt_file" ]]; then
+                    prompt_file="$1"
+                    shift
+                else
+                    log_error "Unexpected argument: $1"
+                    exit 1
+                fi
+                ;;
+        esac
+    done
+
+    if [[ -z "$prompt_file" ]]; then
+        log_error "Usage: run_ralph.sh [--k2] <prompt_file>"
         exit 1
     fi
 
-    local prompt_file="$1"
+    # Set Kimi K2 environment if requested
+    if [[ "$use_kimi_k2" == "true" ]]; then
+        set_kimi_k2_env
+    fi
 
     # Validate inputs
     if ! validate_prompt_file "$prompt_file"; then
