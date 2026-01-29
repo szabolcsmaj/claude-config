@@ -22,11 +22,11 @@ readonly API_LIMIT_SLEEP_SECONDS=600  # 10 minutes
 # === Kimi K2 Configuration ===
 set_kimi_k2_env() {
     export ANTHROPIC_BASE_URL="https://api.moonshot.ai/anthropic"
-    export ANTHROPIC_MODEL="kimi-k2-thinking-turbo"
-    export ANTHROPIC_DEFAULT_OPUS_MODEL="kimi-k2-thinking-turbo"
-    export ANTHROPIC_DEFAULT_SONNET_MODEL="kimi-k2-thinking-turbo"
-    export ANTHROPIC_DEFAULT_HAIKU_MODEL="kimi-k2-thinking-turbo"
-    export CLAUDE_CODE_SUBAGENT_MODEL="kimi-k2-thinking-turbo"
+    export ANTHROPIC_MODEL="kimi-k2.5"
+    export ANTHROPIC_DEFAULT_OPUS_MODEL="kimi-k2.5"
+    export ANTHROPIC_DEFAULT_SONNET_MODEL="kimi-k2.5"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="kimi-k2.5"
+    export CLAUDE_CODE_SUBAGENT_MODEL="kimi-k2.5"
 
     # Handle ANTHROPIC_AUTH_TOKEN
     if [[ -z "${ANTHROPIC_AUTH_TOKEN:-}" ]]; then
