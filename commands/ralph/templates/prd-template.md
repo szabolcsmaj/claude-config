@@ -35,12 +35,14 @@
 <!-- APIs, auth providers, databases -->
 
 # Technology
-<!-- The intended technology we want to use
-<!-- 
-    Think about: 
-        - database: sqlite, postgres, mysql, etc 
+<!-- The intended technology we want to use -->
+<!-- Think about: 
+    - database: sqlite, postgres, mysql, etc 
 	- backend framework: django, fastapi, flask
 	- frontend framework: next.js (react based), nuxt (vue based), SvelteKit
+    - frontend css: tailwind
+    - frontend component libraries:
+        - tailwind based: daisyui, shadcn/ui (next.js(react)), headless ui (react, vue)
 	- packaging/bundling: bun (js), uv (python)
 	- linting: 
         - python: ruff (linter + formatter)
