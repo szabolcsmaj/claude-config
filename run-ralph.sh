@@ -242,6 +242,12 @@ is_test_focused_loop() {
 detect_api_limit_error() {
     local response="$1"
 
+    # Check for simple rate_limit error (most common from Claude CLI)
+    # Format: {"error":"rate_limit",...}
+    if echo "$response" | grep -qP '"error"\s*:\s*"rate_limit"'; then
+        return 0
+    fi
+
     # Check for Anthropic API error structure with rate limit type
     # Format: {"type":"error","error":{"type":"rate_limit_error",...}}
     if echo "$response" | grep -qP '"type"\s*:\s*"error".*"type"\s*:\s*"rate_limit_error"'; then
