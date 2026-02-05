@@ -18,6 +18,8 @@ readonly MAX_CONSECUTIVE_DONE_SIGNALS=3
 readonly MAX_CONSECUTIVE_TEST_LOOPS=3
 readonly TEST_PERCENTAGE_THRESHOLD=30
 readonly API_LIMIT_SLEEP_SECONDS=600  # 10 minutes
+readonly DEFAULT_IMPLEMENTATION_PLAN="IMPLEMENTATION_PLAN.md"
+IMPLEMENTATION_PLAN_FILE="$DEFAULT_IMPLEMENTATION_PLAN"
 
 # === Kimi K2 Configuration ===
 set_kimi_k2_env() {
@@ -345,10 +347,10 @@ detect_error_response() {
 # Does NOT count special markers: [O], [M], [U], [D]
 # Returns: count of unchecked tasks
 count_unchecked_tasks() {
-    local plan_file="IMPLEMENTATION_PLAN.md"
+    local plan_file="$IMPLEMENTATION_PLAN_FILE"
 
     if [[ ! -f "$plan_file" ]]; then
-        log_warning "IMPLEMENTATION_PLAN.md not found"
+        log_info "Implementation plan file not found: $plan_file (continuing with 0 unchecked tasks)"
         echo "0"
         return
     fi
@@ -380,6 +382,10 @@ run_claude_loop() {
     log_info "  MAX_CONSECUTIVE_TEST_LOOPS: $MAX_CONSECUTIVE_TEST_LOOPS"
     log_info "  TEST_PERCENTAGE_THRESHOLD: $TEST_PERCENTAGE_THRESHOLD%"
     log_info "  API_LIMIT_SLEEP_SECONDS: $API_LIMIT_SLEEP_SECONDS"
+    log_info "  IMPLEMENTATION_PLAN_FILE: $IMPLEMENTATION_PLAN_FILE"
+    if [[ "$IMPLEMENTATION_PLAN_FILE" != "$DEFAULT_IMPLEMENTATION_PLAN" ]]; then
+        log_warning "Using custom implementation plan file (default: $DEFAULT_IMPLEMENTATION_PLAN)"
+    fi
     echo ""
 
     while true; do
@@ -470,7 +476,7 @@ run_claude_loop() {
             if [[ $total_indicators -ge 2 && "$exit_signal" == "true" ]] || \
                [[ $consecutive_done_signals -ge $MAX_CONSECUTIVE_DONE_SIGNALS ]] || \
                [[ $consecutive_test_loops -ge $MAX_CONSECUTIVE_TEST_LOOPS ]]; then
-                log_warning "Exit conditions met but $unchecked_count unchecked task(s) remain in IMPLEMENTATION_PLAN.md"
+                log_warning "Exit conditions met but $unchecked_count unchecked task(s) remain in $IMPLEMENTATION_PLAN_FILE"
             fi
         fi
 
@@ -501,12 +507,21 @@ main() {
                 use_kimi_k2=true
                 shift
                 ;;
+            --implementation-plan-file)
+                if [[ -z "${2:-}" ]]; then
+                    log_error "--implementation-plan-file requires a file argument"
+                    exit 1
+                fi
+                IMPLEMENTATION_PLAN_FILE="$2"
+                shift 2
+                ;;
             --help|-h)
-                echo "Usage: run_ralph.sh [--k2] <prompt_file>"
+                echo "Usage: run_ralph.sh [--k2] [--implementation-plan-file <file>] <prompt_file>"
                 echo ""
                 echo "Options:"
-                echo "  --k2    Use Kimi K2 model configuration"
-                echo "  --help  Show this help message"
+                echo "  --k2                          Use Kimi K2 model configuration"
+                echo "  --implementation-plan-file    Use a custom file instead of IMPLEMENTATION_PLAN.md"
+                echo "  --help                        Show this help message"
                 exit 0
                 ;;
             *)
@@ -522,7 +537,7 @@ main() {
     done
 
     if [[ -z "$prompt_file" ]]; then
-        log_error "Usage: run_ralph.sh [--k2] <prompt_file>"
+        log_error "Usage: run_ralph.sh [--k2] [--implementation-plan-file <file>] <prompt_file>"
         exit 1
     fi
 
