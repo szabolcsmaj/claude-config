@@ -92,6 +92,9 @@
 	- useful libraries:
 	  - Python:
 	    - python_dotenv: .env handling
+    - Security:
+      - Pentesting:
+        - shannon: https://github.com/KeygraphHQ/shannon
 --> 
 
 # Assumptions
