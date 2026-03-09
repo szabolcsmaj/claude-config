@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.py"
+  - "**/*.pyi"
+---
 # Python Project Conventions
 
 Include these rules automatically for all Python projects. For the full guide with examples, run `/python-app`.
@@ -8,14 +13,13 @@ Include these rules automatically for all Python projects. For the full guide wi
 2. **Validate ALL user inputs** - Forms, REST calls, query params are "dirty" until validated with Pydantic
 3. **Ruff for linting/formatting** - Always include in project (`uv add ruff --dev`)
 4. **UV for project management** - Use `uv init`, `uv add`, `uv run`
-5. **python-dotenv for env vars** - Always use for `.env` files (`uv add python-dotenv`)
-6. **Always create .env.example** - When using env vars, create `.env.example` if missing (commit this, never commit `.env`)
-7. **Never return None** - Return `[]`, `{}`, `""`, or `"unknown"` instead
-8. **Use Literals** - For limited string options, use `Literal["opt1", "opt2"]`
-9. **Pytest for testing** - With pytest-django for Django projects
-10. **Standard logging** - Log errors with context, then propagate (don't swallow)
-11. **Prefer sync** - Unless async has clear benefit
-12. **Python 3.11+** - Minimum version, prefer 3.12+ for new projects
+5. **Never return None** - Return `[]`, `{}`, `""`, or `"unknown"` instead
+6. **Use Literals** - For limited string options, use `Literal["opt1", "opt2"]`
+7. **Pytest for testing** - With pytest-django for Django projects
+8. **Standard logging** - Log errors with context, then propagate (don't swallow)
+9. **Prefer sync** - Unless async has clear benefit
+10. **Python 3.11+** - Minimum version, prefer 3.12+ for new projects
+11. **Context Managers** - Use context managers (`with` statement) for resource management
 
 ## Before Starting a New Python Project
 
