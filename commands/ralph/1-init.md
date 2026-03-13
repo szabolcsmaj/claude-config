@@ -96,8 +96,9 @@ This block is REQUIRED for every response. The automation system depends on it.
    - [M] - Manual testing required (cannot be automated)
    - [U] - Unable to complete (blocked by external factors)
    Example: `- [M] Manual testing on Chrome, Firefox, Safari`
-4. When both unit and integration tests pass, update IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes.
-5. Output the parts in <output_requirements>
+4. When both unit and integration tests pass, update IMPLEMENTATION_PLAN.md but do not delete/collapse completed items. Every item has to remain visible.
+5. `git add -A` then `git commit` with a message describing the changes.
+6. Output the parts in <output_requirements>
 
 <output_requirements>
    
