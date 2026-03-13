@@ -37,6 +37,8 @@ Example for an updated <findings_file> issue:
 - Spawn parallel subagents for each spec file in `specs/*.md` and study them.
 - Based on the updated content of the <findings_file>, update all the files in `specs/*.md` that needs updating, or if new ones need to be created. Do this by spawning parallel subagents.
 - When the spec files are updated, include the list of updated/created spec files in <findings_file>, including the issue numbers that are related to them.
+- Tell the user that you strongly suggest starting a new claude code instance and run "study <findings_file> and decide if all the spec files in specs/*.md were updated based on the answers given in the audit finding". 
 - Ask the user if:
+   - Whether he wants to run the comparison of the <findings_file> and the spec files in a separate clean claude code instance?
    - Whether he wants to rerun the audit on the spec files again with the '/3-audit-specs' command?
    - Or if he wants to start creating the implementation plan with `while true; cat prompt_plan.md | cldy -p --output-format=stream-json --model opus --verbose; end`
