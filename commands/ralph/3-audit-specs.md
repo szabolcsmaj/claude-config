@@ -20,7 +20,8 @@ findings_file: $1
 2. Focus on urgent or critical issues first.
 3. Save the findings into <findings_file>. If no <findings_file> was specified, create a new one with the name of `audit_findings.md`. If this file already exists, create a new one with a suffix of `_1` (e.g.: `audit_findings_1.md`, etc)
 4. The <findings_file> should group the different issues under topics, then under each topic, it should list all related issues by number, state the question, then state a decision under it. The decision part should have the value of "Unanswered"
-5. Prompt the user to execute `/ralph:4-clarify-audit <findings_file>` command to got through the audit findings.
+5. Prompt the user to execute `/ralph:4-clarify-audit <findings_file>` command to go through the audit findings.
+6. Remind the user that after clarifying and updating specs, they should run `/ralph:5-ensure-answers-were-moved-to-spec <findings_file>` to verify that all decisions were actually written back into the spec files. With many moving parts across multiple specs, it's easy for updates to slip through the cracks.
 
 Example for the <findings_file>:
 ```md
