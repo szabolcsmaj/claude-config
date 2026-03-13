@@ -28,3 +28,7 @@ telemetry/
                                                                                                                                                                                                                    
 # Plugins
 plugins/
+
+tasks/
+
+usage-data/
