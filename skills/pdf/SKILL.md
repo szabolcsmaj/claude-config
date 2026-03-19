@@ -120,6 +120,29 @@ if all_tables:
 
 ### reportlab - Create PDFs
 
+#### Non-ASCII / Unicode Font Support (IMPORTANT)
+
+Reportlab's built-in fonts (Helvetica, Courier, Times) do NOT support extended Unicode characters such as Hungarian (ő, ű), Polish (ł, ź), Czech (ř, ů), or other non-ASCII glyphs — they render as black squares. When creating PDFs with non-English content, ALWAYS register and use a TTF font with full Unicode coverage:
+
+```python
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# Liberation Sans — available on most Linux systems, supports all European languages
+pdfmetrics.registerFont(TTFont("Liberation", "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"))
+pdfmetrics.registerFont(TTFont("Liberation-Bold", "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"))
+pdfmetrics.registerFont(TTFont("Liberation-Italic", "/usr/share/fonts/truetype/liberation/LiberationSans-Italic.ttf"))
+pdfmetrics.registerFont(TTFont("Liberation-BoldItalic", "/usr/share/fonts/truetype/liberation/LiberationSans-BoldItalic.ttf"))
+pdfmetrics.registerFontFamily("Liberation", normal="Liberation", bold="Liberation-Bold", italic="Liberation-Italic", boldItalic="Liberation-BoldItalic")
+
+# For monospace code blocks:
+pdfmetrics.registerFont(TTFont("LiberationMono", "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"))
+
+# Then use fontName="Liberation" in all ParagraphStyle definitions instead of "Helvetica"
+```
+
+If Liberation fonts are not available, use `fc-list :lang=hu` (or the target language) to find an installed font with the required glyph coverage.
+
 #### Basic PDF Creation
 ```python
 from reportlab.lib.pagesizes import letter
