@@ -51,37 +51,44 @@ def is_dangerous_rm_command(command: str) -> bool:
     return False
 
 
+# Match a utility only when it appears at "command position": the start of
+# input or right after a shell command separator (newline, ; & && | ||, $(, (
+# or backtick), with optional whitespace and an optional `sudo` prefix. This
+# prevents false positives when these names appear inside quoted strings
+# (e.g. a commit message containing "dd" or "fdisk").
+_CMD_START = r'(?:^|[\n;&|`(])\s*(?:sudo\s+)?'
+
 # Utilities that can erase data, format drives, or destructively modify volumes.
 # Each entry: (pattern, human-readable reason)
 DANGEROUS_DISK_COMMANDS: list[tuple[str, str]] = [
     # Disk/partition erasure & formatting
-    (r'\bdd\b', "dd can overwrite entire drives"),
-    (r'\bmkfs\b', "mkfs formats and destroys existing data on a partition"),
-    (r'\bmkfs\.\w+', "mkfs variant formats and destroys existing data"),
-    (r'\bmkswap\b', "mkswap formats a partition as swap"),
-    (r'\bshred\b', "shred securely overwrites files/devices"),
-    (r'\bwipefs\b', "wipefs wipes filesystem signatures"),
-    (r'\bblkdiscard\b', "blkdiscard discards all sectors on a block device"),
-    (r'\bsgdisk\b', "sgdisk can manipulate/destroy GPT partition tables"),
-    (r'\bsfdisk\b', "sfdisk can overwrite partition tables"),
-    (r'\bfdisk\b', "fdisk can modify/destroy partition tables"),
-    (r'\bcfdisk\b', "cfdisk can modify/destroy partition tables"),
-    (r'\bparted\b', "parted can modify/destroy partition tables"),
-    (r'\bgdisk\b', "gdisk can modify/destroy partition tables"),
+    (_CMD_START + r'dd\b', "dd can overwrite entire drives"),
+    (_CMD_START + r'mkfs\b', "mkfs formats and destroys existing data on a partition"),
+    (_CMD_START + r'mkfs\.\w+', "mkfs variant formats and destroys existing data"),
+    (_CMD_START + r'mkswap\b', "mkswap formats a partition as swap"),
+    (_CMD_START + r'shred\b', "shred securely overwrites files/devices"),
+    (_CMD_START + r'wipefs\b', "wipefs wipes filesystem signatures"),
+    (_CMD_START + r'blkdiscard\b', "blkdiscard discards all sectors on a block device"),
+    (_CMD_START + r'sgdisk\b', "sgdisk can manipulate/destroy GPT partition tables"),
+    (_CMD_START + r'sfdisk\b', "sfdisk can overwrite partition tables"),
+    (_CMD_START + r'fdisk\b', "fdisk can modify/destroy partition tables"),
+    (_CMD_START + r'cfdisk\b', "cfdisk can modify/destroy partition tables"),
+    (_CMD_START + r'parted\b', "parted can modify/destroy partition tables"),
+    (_CMD_START + r'gdisk\b', "gdisk can modify/destroy partition tables"),
     # Volume/RAID/LVM management
-    (r'\bmdadm\b', "mdadm can create/destroy RAID arrays"),
-    (r'\blvcreate\b', "lvcreate can overwrite data on LVM volumes"),
-    (r'\blvremove\b', "lvremove destroys LVM logical volumes"),
-    (r'\blvresize\b', "lvresize can cause data loss on LVM volumes"),
-    (r'\bvgcreate\b', "vgcreate can overwrite data on LVM volume groups"),
-    (r'\bvgremove\b', "vgremove destroys LVM volume groups"),
-    (r'\bpvcreate\b', "pvcreate can overwrite data on physical volumes"),
-    (r'\bpvremove\b', "pvremove destroys LVM physical volume metadata"),
-    (r'\bdmsetup\b', "dmsetup can remove/modify block devices"),
+    (_CMD_START + r'mdadm\b', "mdadm can create/destroy RAID arrays"),
+    (_CMD_START + r'lvcreate\b', "lvcreate can overwrite data on LVM volumes"),
+    (_CMD_START + r'lvremove\b', "lvremove destroys LVM logical volumes"),
+    (_CMD_START + r'lvresize\b', "lvresize can cause data loss on LVM volumes"),
+    (_CMD_START + r'vgcreate\b', "vgcreate can overwrite data on LVM volume groups"),
+    (_CMD_START + r'vgremove\b', "vgremove destroys LVM volume groups"),
+    (_CMD_START + r'pvcreate\b', "pvcreate can overwrite data on physical volumes"),
+    (_CMD_START + r'pvremove\b', "pvremove destroys LVM physical volume metadata"),
+    (_CMD_START + r'dmsetup\b', "dmsetup can remove/modify block devices"),
     # Filesystem-level destruction
-    (r'\btruncate\b', "truncate can zero out files"),
+    (_CMD_START + r'truncate\b', "truncate can zero out files"),
     # Crypto/LUKS
-    (r'\bcryptsetup\b', "cryptsetup can format/erase LUKS volumes"),
+    (_CMD_START + r'cryptsetup\b', "cryptsetup can format/erase LUKS volumes"),
 ]
 
 
