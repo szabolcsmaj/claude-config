@@ -8,14 +8,13 @@ import sys
 import re
 from pathlib import Path
 
-def is_dangerous_rm_command(command):
+def is_dangerous_rm_command(command: str) -> bool:
     """
     Comprehensive detection of dangerous rm commands.
     Matches various forms of rm -rf and similar destructive patterns.
     """
-    # Normalize command by removing extra spaces and converting to lowercase
     normalized = ' '.join(command.lower().split())
-    
+
     # Pattern 1: Standard rm -rf variations
     patterns = [
         r'\brm\s+.*-[a-z]*r[a-z]*f',  # rm -rf, rm -fr, rm -Rf, etc.
@@ -25,12 +24,12 @@ def is_dangerous_rm_command(command):
         r'\brm\s+-r\s+.*-f',  # rm -r ... -f
         r'\brm\s+-f\s+.*-r',  # rm -f ... -r
     ]
-    
+
     # Check for dangerous patterns
     for pattern in patterns:
         if re.search(pattern, normalized):
             return True
-    
+
     # Pattern 2: Check for rm with recursive flag targeting dangerous paths
     dangerous_paths = [
         r'/',           # Root directory
@@ -43,13 +42,59 @@ def is_dangerous_rm_command(command):
         r'\.',          # Current directory
         r'\.\s*$',      # Current directory at end of command
     ]
-    
+
     if re.search(r'\brm\s+.*-[a-z]*r', normalized):  # If rm has recursive flag
         for path in dangerous_paths:
             if re.search(path, normalized):
                 return True
-    
+
     return False
+
+
+# Utilities that can erase data, format drives, or destructively modify volumes.
+# Each entry: (pattern, human-readable reason)
+DANGEROUS_DISK_COMMANDS: list[tuple[str, str]] = [
+    # Disk/partition erasure & formatting
+    (r'\bdd\b', "dd can overwrite entire drives"),
+    (r'\bmkfs\b', "mkfs formats and destroys existing data on a partition"),
+    (r'\bmkfs\.\w+', "mkfs variant formats and destroys existing data"),
+    (r'\bmkswap\b', "mkswap formats a partition as swap"),
+    (r'\bshred\b', "shred securely overwrites files/devices"),
+    (r'\bwipefs\b', "wipefs wipes filesystem signatures"),
+    (r'\bblkdiscard\b', "blkdiscard discards all sectors on a block device"),
+    (r'\bsgdisk\b', "sgdisk can manipulate/destroy GPT partition tables"),
+    (r'\bsfdisk\b', "sfdisk can overwrite partition tables"),
+    (r'\bfdisk\b', "fdisk can modify/destroy partition tables"),
+    (r'\bcfdisk\b', "cfdisk can modify/destroy partition tables"),
+    (r'\bparted\b', "parted can modify/destroy partition tables"),
+    (r'\bgdisk\b', "gdisk can modify/destroy partition tables"),
+    # Volume/RAID/LVM management
+    (r'\bmdadm\b', "mdadm can create/destroy RAID arrays"),
+    (r'\blvcreate\b', "lvcreate can overwrite data on LVM volumes"),
+    (r'\blvremove\b', "lvremove destroys LVM logical volumes"),
+    (r'\blvresize\b', "lvresize can cause data loss on LVM volumes"),
+    (r'\bvgcreate\b', "vgcreate can overwrite data on LVM volume groups"),
+    (r'\bvgremove\b', "vgremove destroys LVM volume groups"),
+    (r'\bpvcreate\b', "pvcreate can overwrite data on physical volumes"),
+    (r'\bpvremove\b', "pvremove destroys LVM physical volume metadata"),
+    (r'\bdmsetup\b', "dmsetup can remove/modify block devices"),
+    # Filesystem-level destruction
+    (r'\btruncate\b', "truncate can zero out files"),
+    # Crypto/LUKS
+    (r'\bcryptsetup\b', "cryptsetup can format/erase LUKS volumes"),
+]
+
+
+def is_dangerous_disk_command(command: str) -> tuple[bool, str]:
+    """
+    Check if a command uses any utility that can erase, format,
+    or destructively modify drives/volumes.
+    Returns (is_dangerous, reason).
+    """
+    for pattern, reason in DANGEROUS_DISK_COMMANDS:
+        if re.search(pattern, command):
+            return True, reason
+    return False, ""
 
 def is_git_branch_delete(command: str) -> bool:
     """
@@ -105,20 +150,26 @@ def main():
             print("Use .env.sample for template files instead", file=sys.stderr)
             sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
         
-        # Check for dangerous rm -rf commands
+        # Check for dangerous Bash commands
         if tool_name == 'Bash':
             command = tool_input.get('command', '')
-            
-            # Block rm -rf commands with comprehensive pattern matching
+
+            # Block rm -rf commands
             if is_dangerous_rm_command(command):
                 print("BLOCKED: Dangerous rm command detected and prevented", file=sys.stderr)
-                sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
+                sys.exit(2)
+
+            # Block disk/volume destructive utilities
+            is_dangerous, reason = is_dangerous_disk_command(command)
+            if is_dangerous:
+                print(f"BLOCKED: {reason}", file=sys.stderr)
+                sys.exit(2)
 
             # Block git branch deletion (including `git br` alias)
             if is_git_branch_delete(command):
                 print("BLOCKED: git branch deletion is not allowed without explicit user action", file=sys.stderr)
                 sys.exit(2)
-
+        
         # Ensure log directory exists
         log_dir = Path.cwd() / '.claude/data/logs'
         log_dir.mkdir(parents=True, exist_ok=True)
