@@ -49,7 +49,7 @@ project_name: $1
    - `target-version = "py312"` for ruff
    - `line-length = 120`
    - Ruff lint rules: `["E", "W", "F", "I", "N", "UP", "B", "SIM", "TCH", "ANN", "RET", "PTH"]`
-   - pytest testpaths: `["tests"]`, pythonpath: `["src"]`
+   - pytest testpaths: `["tests"]`, pythonpath: `["."]`
 
 4. **Create `.env.example`** with all env vars documented with example values.
 
@@ -77,6 +77,8 @@ project_name: $1
    ```
 
 ### Phase 3: Implementation
+
+**IMPORTANT — Import convention:** All imports between `src/` modules MUST use the `src.` prefix (e.g., `from src.config import load_config`, NOT `from config import load_config`). The entry point at the project root also uses `src.` prefix. Bare module names break when the project is run from the project root directory. The pytest `pythonpath` in `pyproject.toml` must be set to `["."]` (project root), NOT `["src"]`, to match this convention. Also avoid naming any module `types.py` as it conflicts with Python's stdlib `types` module.
 
 Create the source code under `src/` with these modules:
 
