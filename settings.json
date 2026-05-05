@@ -28,7 +28,7 @@
       "Write(./.env.local)",
       "Write(./.env.production)"
     ],
-    "defaultMode": "default"
+    "defaultMode": "auto"
   },
   "hooks": {
     "Notification": [
@@ -72,6 +72,17 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "matcher": "",
@@ -89,6 +100,12 @@
     "command": "uv run ~/.claude/status_lines/status_line.py",
     "padding": 0
   },
-  "enabledPlugins": {},
-  "alwaysThinkingEnabled": true
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
+  },
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
+  "editorMode": "vim",
+  "autoCompactEnabled": false,
+  "skipAutoPermissionPrompt": true
 }
