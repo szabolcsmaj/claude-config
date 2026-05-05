@@ -51,6 +51,16 @@ def is_dangerous_rm_command(command):
     
     return False
 
+def is_git_branch_delete(command: str) -> bool:
+    """
+    Detect git branch deletion (including the `git br` alias).
+    Matches `git branch|br` followed somewhere by `-d`, `-D`, a combined
+    short-flag containing d/D (e.g. `-rD`), or `--delete`.
+    """
+    pattern = r'\bgit\s+(branch|br)\b.*?\s(-[a-zA-Z]*[dD]\b|--delete\b)'
+    return bool(re.search(pattern, command))
+
+
 def is_env_file_access(tool_name, tool_input):
     """
     Check if any tool is trying to access .env files containing sensitive data.
@@ -103,7 +113,12 @@ def main():
             if is_dangerous_rm_command(command):
                 print("BLOCKED: Dangerous rm command detected and prevented", file=sys.stderr)
                 sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
-        
+
+            # Block git branch deletion (including `git br` alias)
+            if is_git_branch_delete(command):
+                print("BLOCKED: git branch deletion is not allowed without explicit user action", file=sys.stderr)
+                sys.exit(2)
+
         # Ensure log directory exists
         log_dir = Path.cwd() / '.claude/data/logs'
         log_dir.mkdir(parents=True, exist_ok=True)
