@@ -23,7 +23,6 @@
       "Read(./secrets/**)",
       "Read(./node_modules/**)",
       "Bash(rm -rf:*)",
-      "Bash(git push:*)",
       "Write(./.env)",
       "Write(./.env.local)",
       "Write(./.env.production)"
